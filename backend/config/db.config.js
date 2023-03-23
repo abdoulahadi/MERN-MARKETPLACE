@@ -1,4 +1,5 @@
+require('dotenv').config();
+
 module.exports = {
-    url: "mongodb+srv://caambdiop:MuK3QDOuNvP9SvND@cluster0.nbqmjie.mongodb.net/marketplace?retryWrites=true&w=majority",
-  };
-  
+    url: process.env.MONGO_URI,
+};
