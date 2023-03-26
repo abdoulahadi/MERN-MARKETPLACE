@@ -21,7 +21,7 @@ exports.create = async (req, res) => {
     const newVendeur = new Vendeur({ user, isVerified: true });
     await newVendeur.save();
 
-    res.status(201).json({ message: "Vendeur créé avec succès", product });
+    res.status(200).json({ message: "Vendeur créé avec succès", product });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Une erreur est survenue lors de la création du vendeur.' });
