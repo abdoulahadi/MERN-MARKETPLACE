@@ -12,10 +12,10 @@ exports.create = async (req, res) => {
     const user = new User({ username, mail, password });
 
     await user.save();
-    res.status(201).json({ message: 'Produit créé avec succès', user });
+    res.status(201).json({ message: 'Utilisateur créé avec succès', user });
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Erreur lors de la création du user' });
+    res.status(500).json({ message: 'Erreur lors de la création de l\'utilisateur' });
   }
 };

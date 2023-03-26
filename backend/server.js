@@ -42,6 +42,7 @@ Parti pour intégrer les require des routes
 
 require("./routes/product.route")(app);
 require("./routes/vendeur.route")(app);
+require("./routes/user.route")(app);
 
 
 const PORT = process.env.PORT || 8080;

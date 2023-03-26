@@ -3,25 +3,32 @@ module.exports = app => {
   var router = require("express").Router();
 
   // Créer un Produit....
-  router.post("/products", products.create);
+  router.post("/", products.create);
 
   // Avoir la liste de tous produits
-  router.get("/products", products.getAllProduct);
+  router.get("/", products.getAllProduct);
 
   // Avoir le produit en fonction du catégorie
-  router.get("/products/:id", products.getProductById);
+  router.get("/:idProduct", products.getProductById);
 
   // Avoir la liste des produits en fonction du catégorie
-  router.get("/products/category/:category", products.getAllProductByCategory);
+  router.get("/category/:category", products.getAllProductByCategory);
 
   // Avoir la liste des produits en fonction du vendeur
-  router.get("/products/vendeur/:idVendeur", products.getAllProductByVendeur);
+  router.get("/vendeur/:idVendeur", products.getAllProductByVendeur);
 
   // Faire la mise à jour d'un produit en passant l'id
-  router.put("/products/:idProduct", products.updateProduct);
+  router.put("/:idProduct", products.updateProduct);
 
   // Faire la supression d'un produit en passant l'id
-  router.delete("/products/:idProduct", products.deleteProduct);
+  router.delete("/:idProduct", products.deleteProduct);
+
+    // C'était cette ligne suivante
+    /**
+     * Exemple de lien http://localhost:8080/products suivie de la valeur
+     * qui est en haut
+    */
+    app.use("/products", router)
 
 
 };
