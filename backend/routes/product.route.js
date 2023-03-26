@@ -12,10 +12,10 @@ module.exports = app => {
   router.get("/products/:id", products.getProductById);
 
   // Avoir la liste des produits en fonction du catégorie
-  router.get("/products/:category", products.getAllProductByCategory);
+  router.get("/products/category/:category", products.getAllProductByCategory);
 
   // Avoir la liste des produits en fonction du vendeur
-  router.get("/products/:idVendeur", products.getAllProductByVendeur);
+  router.get("/products/vendeur/:idVendeur", products.getAllProductByVendeur);
 
   // Faire la mise à jour d'un produit en passant l'id
   router.put("/products/:idProduct", products.updateProduct);
