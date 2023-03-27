@@ -4,7 +4,7 @@ const CommandeSchema = new mongoose.Schema({
   produits: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Produit'
+      ref: 'product'
     }
   ],
   prixTotal: {
@@ -13,7 +13,7 @@ const CommandeSchema = new mongoose.Schema({
   },
   proprietaire: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'user'
   },
   paiementEffectue: {
     type: Boolean,
