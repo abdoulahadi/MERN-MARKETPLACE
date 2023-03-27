@@ -37,6 +37,8 @@ exports.ajouterProduit = async (req, res) => {
     }
 
     commande.produits.push(produit._id);
+    commande.calculerPrixTotal(); // Mettre à jour le prix total
+
 
     await commande.save();
 
@@ -60,6 +62,7 @@ exports.retirerProduit = async (req, res) => {
     }
 
     commande.produits = commande.produits.filter((p) => p.toString() !== produit._id.toString());
+    commande.calculerPrixTotal(); // Mettre à jour le prix total
 
     await commande.save();
 

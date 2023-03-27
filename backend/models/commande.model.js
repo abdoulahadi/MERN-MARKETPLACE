@@ -21,6 +21,17 @@ const CommandeSchema = new mongoose.Schema({
   }
 });
 
+CommandeSchema.methods.calculerPrixTotal = function() {
+  let total = 0;
+  for(let i = 0; i < this.produits.length; i++) {
+    total += this.produits[i].price;
+  }
+  this.prixTotal = total;
+  return total;
+};
+
 const Commande = mongoose.model('Commande', CommandeSchema);
+
+
 
 module.exports = Commande;
