@@ -10,7 +10,7 @@ module.exports = mongoose => {
       */
       vendeur: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Vendeur",
+        ref: "vendeur",
         required: true,
       },
       image:{

@@ -8,6 +8,9 @@ module.exports = app => {
   // Avoir la liste de tous produits
   router.get("/", products.getAllProduct);
 
+  // Avoir la liste des 10 nouveaux Produits
+  router.get("/newProucts",products.getNewProduts);
+
   // Avoir le produit en fonction du catégorie
   router.get("/:idProduct", products.getProductById);
 
@@ -23,12 +26,9 @@ module.exports = app => {
   // Faire la supression d'un produit en passant l'id
   router.delete("/:idProduct", products.deleteProduct);
 
-    // C'était cette ligne suivante
     /**
      * Exemple de lien http://localhost:8080/products suivie de la valeur
      * qui est en haut
     */
     app.use("/products", router)
-
-
 };
