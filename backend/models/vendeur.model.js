@@ -6,6 +6,17 @@ module.exports = mongoose => {
       required: true,
       unique: true,
     },
+    name:{
+      type: String,
+      required:true,
+      unique:true
+    },
+    image:{
+      type:String
+    },
+    description:{
+      type:String,
+    },
     isVerified: {
       type: Boolean,
       default: false,

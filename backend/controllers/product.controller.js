@@ -1,48 +1,57 @@
 const db = require("../models");
-const upload = require('../config/multer.config');
-const multer = require('multer');
+const upload = require("../config/multer.config");
+const multer = require("multer");
+const fs = require("fs");
 const Product = db.products;
 const Vendeur = db.vendeurs;
 
 exports.create = async (req, res) => {
   // Le middleware `upload.single('image')` a été ajouté ici
-  upload.single('image')(req, res, async (err) => {
+  upload.single("image")(req, res, async err => {
     if (err instanceof multer.MulterError) {
-      return res.status(400).json({ message: "Erreur lors du téléchargement de l'image." });
-    } else if (err) {
-      return res.status(500).json({ message: "Une erreur s'est produite lors du téléchargement de l'image." });
-    }
-  try {
-    const name = req.body.name;
-    const vendeur = req.body.vendeur;
-    const price = req.body.price;
-    const description = req.body.description;
-    const category = req.body.category;
-
-    if (!name || !vendeur || !category || !price||!req.file ) {
       return res
         .status(400)
-        .json({ message: "Veuillez remplir les champs obligatoires." });
+        .json({ message: "Erreur lors du téléchargement de l'image." });
+    } else if (err) {
+      return res
+        .status(500)
+        .json({
+          message:
+            "Une erreur s'est produite lors du téléchargement de l'image.",
+        });
     }
+    try {
+      const name = req.body.name;
+      const vendeur = req.body.vendeur;
+      const price = req.body.price;
+      const description = req.body.description;
+      const category = req.body.category;
 
-    const product = new Product({
-      name,
-      vendeur,
-      image: req.file.path,
-      category,
-      price,
-      description,
-    });
+      if (!name || !vendeur || !category || !price || !req.file) {
+        return res
+          .status(400)
+          .json({ message: "Veuillez remplir les champs obligatoires." });
+      }
 
-    await product.save();
-    res.status(200).json({ message: "Produit créé avec succès", product });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Erreur lors de la création du produit" });
-  }
-});
-}
+      const product = new Product({
+        name,
+        vendeur,
+        image: req.file.path,
+        category,
+        price,
+        description,
+      });
 
+      await product.save();
+      res.status(200).json({ message: "Produit créé avec succès", product });
+    } catch (error) {
+      console.error(error);
+      res
+        .status(500)
+        .json({ message: "Erreur lors de la création du produit" });
+    }
+  });
+};
 
 exports.getAllProduct = async (req, res) => {
   try {
@@ -68,10 +77,12 @@ exports.getProductById = async (req, res) => {
     console.error(error);
     res
       .status(500)
-      .json({ message: "Erreur lors de la récupération du produit en fonction de l'id" });
+      .json({
+        message:
+          "Erreur lors de la récupération du produit en fonction de l'id",
+      });
   }
 };
-
 
 /**
  * Ce fonction permet de la récupération de tous les produits par rapport
@@ -86,7 +97,7 @@ exports.getAllProductByCategory = async (req, res) => {
      */
     const products = await Product.find({
       category: category,
-    }).populate("vendeur","user");
+    }).populate("vendeur", "user");
     if (!products) {
       return res
         .status(404)
@@ -97,7 +108,8 @@ exports.getAllProductByCategory = async (req, res) => {
   } catch (error) {
     console.log(error);
     return res.status(500).json({
-      message: "Erreur lors de la récupération du produit en fonction de la catégorie",
+      message:
+        "Erreur lors de la récupération du produit en fonction de la catégorie",
     });
   }
 };
@@ -107,67 +119,112 @@ exports.getAllProductByCategory = async (req, res) => {
  * passé en paramètres
  */
 exports.getAllProductByVendeur = async (req, res) => {
-    try {
-        const idVendeur = req.params.idVendeur;
-
-        const vendeur = await Vendeur.findById(idVendeur);
-
-        if(!vendeur){
-            return res.status(404).json({ message: "Vendeur non trouvé" }); 
-        }
-
-        const products = await Product.find({vendeur: vendeur.id}).populate("vendeur","user");
-        return res.status(200).json(products);
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({
-          message: "Erreur lors de la récupération du produit en fonction du Vendeur",
-        }); 
-    }
-};
-
-exports.getNewProduts = async(req,res)=>{
   try {
-    const products = await Product.find().sort({createdAt:-1})
-                                         .limit(10)
-                                         .populate("vendeur");
+    const idVendeur = req.params.idVendeur;
+
+    const vendeur = await Vendeur.findById(idVendeur);
+
+    if (!vendeur) {
+      return res.status(404).json({ message: "Vendeur non trouvé" });
+    }
+
+    const products = await Product.find({ vendeur: vendeur.id }).populate(
+      "vendeur",
+      "user"
+    );
     return res.status(200).json(products);
   } catch (error) {
     console.log(error);
-    return res.status(500).json({message:"Erreur lors de la récupérations des nouveaux produits"});
+    return res.status(500).json({
+      message:
+        "Erreur lors de la récupération du produit en fonction du Vendeur",
+    });
+  }
+};
+
+exports.getNewProduts = async (req, res) => {
+  try {
+    const products = await Product.find()
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .populate("vendeur");
+    return res.status(200).json(products);
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({
+        message: "Erreur lors de la récupérations des nouveaux produits",
+      });
   }
 };
 
 exports.updateProduct = async (req, res) => {
-    try {
-        const idProduct = req.params.idProduct;
-        const product = Product.findByIdAndUpdate(idProduct,req.body,{new:true});
-
-        if(!product){
-            return res.status(404).json({ message: "Produit non trouvé" });
-        }
-        return res.status(200).json({message:'Mise à jour complète du produit',product});
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({
-          message: "Erreur lors de la mise à jour du produit",
-        });
+  try {
+    const idProduct = req.params.idProduct;
+    let product = await Product.findById(idProduct);
+    if (!product) {
+      return res.status(404).json({ message: "Produit non trouvé" });
     }
-}
-
-exports.deleteProduct = async (req,res) => {
-    try {
-        const idProduct = req.params.idProduct;
-        const product = Product.findByIdAndDelete(idProduct);
-
-        if (!product){
-            return res.status(404).json({ message: "Produit non trouvé" });
+    let imagePath = product.image;
+    upload.single("image")(req, res, async err => {
+      if (err instanceof multer.MulterError) {
+        return res
+          .status(400)
+          .json({ message: "Erreur lors du téléchargement de l'image." });
+      } else if (err) {
+        return res
+          .status(500)
+          .json({
+            message:
+              "Une erreur s'est produite lors du téléchargement de l'image.",
+          });
+      }
+      if (req.file) {
+        if (imagePath) {
+          // unlink permet de supprimé l'image courant enregistrer pour ce produit
+          fs.unlink(imagePath, err => {
+            if (err) {
+              console.error(err);
+            }
+          });
         }
-        return res.status(200).json({message:'Suppression complète du produit',product});
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({
-          message: "Erreur lors de la suppression du produit",
-        });
+        imagePath = req.file.path;
+      }
+      product = await Product.findByIdAndUpdate(
+        idProduct,
+        { ...req.body, image: imagePath },
+        { new: true }
+      );
+      return res
+        .status(200)
+        .json({ message: "Mise à jour complète du produit", product });
+    });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({
+        message: "Une erreur est survenue lors de la mise à jour du produit",
+      });
+  }
+};
+
+exports.deleteProduct = async (req, res) => {
+  try {
+    const idProduct = req.params.idProduct;
+    const product = Product.findByIdAndDelete(idProduct);
+
+    if (!product) {
+      return res.status(404).json({ message: "Produit non trouvé" });
     }
-}
+    return res
+      .status(200)
+      .json({ message: "Suppression complète du produit", product });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Erreur lors de la suppression du produit",
+    });
+  }
+};
