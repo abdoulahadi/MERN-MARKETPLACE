@@ -55,7 +55,11 @@ exports.create = async (req, res) => {
 
 exports.getAllProduct = async (req, res) => {
   try {
-    const products = await Product.find();
+    const name = req.query.name;
+    var condition = name
+    ? { name: { $regex: name, $options: "i" } }
+    : {};
+    const products = await Product.find(condition);
     return res.status(200).json(products);
   } catch (error) {
     console.error(error);
