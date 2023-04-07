@@ -33,28 +33,24 @@ exports.login = async (req, res) => {
     }
 
     // Vérifie la validité du mot de passe
-    // const isMatch = await compare(password, user.password);
-    // const isMatch = (user.password == req.body.password)
-    // if (!isMatch) {
+
     if (user.password !== password) {
       return res.status(401).json({ error: 'Invalid password' });
     }
 
     // Stocke l'utilisateur dans l'objet de requête pour une utilisation ultérieure
     req.user = user;
-    console.log(user);
 
-    // next();
+    // Crée un objet qui contient les informations à envoyer à la partie front
+    const userData = {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+      // Ajoute d'autres informations si nécessaire
+    };
 
-    // Génération du token d'authentification
-    // const token = jwt.sign(
-    //   { userId: user.id, email: user.email },
-    //   process.env.JWT_SECRET_KEY,
-    //   { expiresIn: '24h' }
-    // );
-
-    // Envoi de la réponse avec le token
-    // res.status(200).json({ token });
+    // Envoie la réponse avec les informations de l'utilisateur connecté
+    res.status(200).json({ user: userData });
 
 
   } catch (error) {
@@ -77,7 +73,7 @@ exports.deleteUser = async (req, res) => {
       message: 'Utilisateur supprimé avec succès'
     });
     // });
-  }catch (error) {
+  } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Erreur serveur lors de la suppression de la commande' });
   }
