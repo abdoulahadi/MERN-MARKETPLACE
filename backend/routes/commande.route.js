@@ -14,14 +14,14 @@ module.exports = app => {
     router.post('/', commandes.creerCommande);
 
     // Ajouter un produit à une commande existante
-    router.patch('/:id/ajouter-produit', commandes.ajouterProduit);
+    router.patch('/ajouter-produit', commandes.ajouterProduit);
 
     // Retirer un produit d'une commande existante
-    router.patch('/:id/retirer-produit', commandes.retirerProduit);
+    router.patch('/retirer-produit', commandes.retirerProduit);
 
 
     // Effectuer le paiement d'une commande
-    router.post('/:id/paiement', commandes.effectuerPaiement);
+    router.post('/paiement', commandes.effectuerPaiement);
 
     // Supprimer une commande
     router.delete('/:id', commandes.supprimerCommande);

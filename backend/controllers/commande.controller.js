@@ -6,13 +6,16 @@ const User= db.users
 
 // Créer une commande
 exports.creerCommande = async (req, res) => {
-  const { produits, proprietaire, prixTotal } = req.body;
-
+  const { proprietaire, prixTotal } = req.body;
+  let verifCommande = await Commande.findOne({ proprietaire: req.body.proprietaire, paiementEffectue: false });
+  if (verifCommande) {
+    return res.status(404).json({ message: 'commande existe déjà' });
+  }
   try {
     const commande = new Commande({
-      produits,
+      // produits,
       proprietaire,
-      prixTotal
+      prixTotal:0
     });
 
     await commande.save();
@@ -26,23 +29,46 @@ exports.creerCommande = async (req, res) => {
 
 // Ajouter un produit à une commande existante
 exports.ajouterProduit = async (req, res) => {
-  const { idCommande, idProduit } = req.params;
+  const { idCommande, idProduit, proprietaire} = req.body;
 
   try {
-    const commande = await Commande.findById(idCommande);
+    
     const produit = await Produit.findById(idProduit);
-
-    if (!commande || !produit) {
-      return res.status(404).json({ message: 'Commande ou produit introuvable' });
+    // console.log(produit);
+    console.log(produit);
+    if (!produit) {
+      return res.status(404).json({ message: 'produit introuvable' });
     }
 
+    // Vérifier si une commande existe déjà pour l'utilisateur
+    let verifCommande = await Commande.findOne({ proprietaire: proprietaire, paiementEffectue: false });
+
+    if (!verifCommande) {
+      // Si aucune commande n'existe, en créer une nouvelle
+      const commande = new Commande({
+        produits: [produit._id],
+        proprietaire: req.body.proprietaire,
+        prixTotal: produit.price
+      });
+      await commande.save();
+      res.json({ commande });
+
+    } 
+    else {    
+    const commande = await Commande.findById(idCommande);
     commande.produits.push(produit._id);
-    commande.calculerPrixTotal(); // Mettre à jour le prix total
-
-
+    // commande.prixTotal += produit.price ; // Mettre à jour le prix total
+    commande.prixTotal = parseInt(commande.prixTotal) + produit.price;
+    //  commande.calculerPrixTotal(); // Mettre à jour le prix total
     await commande.save();
 
     res.json({ commande });
+
+
+    }
+    // await commande.save();
+
+    // res.json({ commande });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Erreur serveur lors de l\'ajout du produit à la commande' });
@@ -51,7 +77,7 @@ exports.ajouterProduit = async (req, res) => {
 
 // Retirer un produit d'une commande existante
 exports.retirerProduit = async (req, res) => {
-  const { idCommande, idProduit } = req.params;
+  const { idCommande, idProduit, idProduitCommande } = req.body;
 
   try {
     const commande = await Commande.findById(idCommande);
@@ -61,8 +87,20 @@ exports.retirerProduit = async (req, res) => {
       return res.status(404).json({ message: 'Commande ou produit introuvable' });
     }
 
-    commande.produits = commande.produits.filter((p) => p.toString() !== produit._id.toString());
-    commande.calculerPrixTotal(); // Mettre à jour le prix total
+    // commande.produits = commande.produits.filter((p) => p.toString() !== produit._id.toString());
+    const index = commande.produits.findIndex((p) => p.toString() === idProduit.toString() && p.idProduitCommande === idProduitCommande);
+    if (index === -1) {
+      return res.status(404).json({ message: 'Produit introuvable dans la commande' });
+    }
+
+    commande.produits.splice(index, 1);
+    commande.prixTotal = parseInt(commande.prixTotal) - produit.price;    // Mettre à jour le prix total
+
+     // Vérifier s'il ne reste plus aucun produit dans la commande
+     if (commande.produits.length === 0) {
+      await Commande.findByIdAndDelete(idCommande);
+      return res.json({ message: 'Commande supprimée car elle ne contient plus aucun produit' });
+    }
 
     await commande.save();
 

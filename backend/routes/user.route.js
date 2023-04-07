@@ -2,14 +2,20 @@ module.exports = app => {
   const users = require("../controllers/user.controller.js");
   var router = require("express").Router();
 
-  // Créer un Produit....
+  // Créer un utlisateur....
   router.post("/", users.create);
+
+  // Route pour vérifier les informations de connexion de l'utilisateur
+  router.post("/login", users.login);
+
+  // Route pour supprimer un utilisateur
+  router.delete("/:id", users.deleteUser);
+
+  // Route pour mettre à jour les informations d'un utilisateur
+  router.put("/:id", users.updateUser);
+
   
 
-  // C'était cette ligne suivante
-  /**
-   * Exemple de lien http://localhost:8080/users suivie de la valeur
-   * qui est en haut
-   */
+
   app.use("/users", router);
 };
