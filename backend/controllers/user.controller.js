@@ -38,15 +38,10 @@ exports.login = async (req, res) => {
       return res.status(401).json({ error: 'Invalid password' });
     }
 
-    // Stocke l'utilisateur dans l'objet de requête pour une utilisation ultérieure
-    req.user = user;
-
-    // Crée un objet qui contient les informations à envoyer à la partie front
     const userData = {
       id: user._id,
       username: user.username,
       email: user.email,
-      // Ajoute d'autres informations si nécessaire
     };
 
     // Envoie la réponse avec les informations de l'utilisateur connecté
