@@ -13,7 +13,7 @@ module.exports = app => {
 
 
     // Afficher tous les produits d'une commande
-    router.get('/:id/afficher-produits', commande.afficherProduits);
+    router.get('/:id/afficher-produits', commandes.afficherProduits);
 
     // Effectuer le paiement d'une commande
     router.post('/:id/paiement', commandes.effectuerPaiement);
