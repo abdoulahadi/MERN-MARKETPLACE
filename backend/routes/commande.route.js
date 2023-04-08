@@ -1,11 +1,3 @@
-// const express = require('express');
-// const router = express.Router();
-// const commandeController = require('../controllers/commandeController');
-
-
-
-// module.exports = router;
-
 module.exports = app => {
     const commandes = require('../controllers/commande.controller.js');
     var router = require("express").Router();
@@ -21,7 +13,7 @@ module.exports = app => {
 
 
     // Effectuer le paiement d'une commande
-    router.post('/paiement', commandes.effectuerPaiement);
+    router.post('/:id/paiement', commandes.effectuerPaiement);
 
     // Supprimer une commande
     router.delete('/:id', commandes.supprimerCommande);

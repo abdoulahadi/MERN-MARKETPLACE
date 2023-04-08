@@ -29,51 +29,42 @@ exports.creerCommande = async (req, res) => {
 
 // Ajouter un produit à une commande existante
 exports.ajouterProduit = async (req, res) => {
-  const { idCommande, idProduit, proprietaire} = req.body;
+  const { idProduit } = req.body;
 
   try {
-    
     const produit = await Produit.findById(idProduit);
-    // console.log(produit);
-    console.log(produit);
     if (!produit) {
-      return res.status(404).json({ message: 'produit introuvable' });
+      return res.status(404).json({ message: 'Produit introuvable' });
     }
 
     // Vérifier si une commande existe déjà pour l'utilisateur
-    let verifCommande = await Commande.findOne({ proprietaire: proprietaire, paiementEffectue: false });
+    // req.user._id="64208b32e6b4113831dbcc1e";
+    id="64208b32e6b4113831dbcc1e"
+    let commande = await Commande.findOne({ proprietaire: id, paiementEffectue: false });
 
-    if (!verifCommande) {
+    if (!commande) {
       // Si aucune commande n'existe, en créer une nouvelle
-      const commande = new Commande({
+      commande = new Commande({
         produits: [produit._id],
-        proprietaire: req.body.proprietaire,
+        proprietaire: id,
         prixTotal: produit.price
       });
-      await commande.save();
-      res.json({ commande });
 
-    } 
-    else {    
-    const commande = await Commande.findById(idCommande);
-    commande.produits.push(produit._id);
-    // commande.prixTotal += produit.price ; // Mettre à jour le prix total
-    commande.prixTotal = parseInt(commande.prixTotal) + produit.price;
-    //  commande.calculerPrixTotal(); // Mettre à jour le prix total
-    await commande.save();
+      await commande.save();
+    } else {
+      // Ajouter le produit à la commande existante
+      commande.produits.push(produit._id);
+      commande.prixTotal = parseInt(commande.prixTotal) + produit.price;
+      await commande.save();
+    }
 
     res.json({ commande });
-
-
-    }
-    // await commande.save();
-
-    // res.json({ commande });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Erreur serveur lors de l\'ajout du produit à la commande' });
   }
 };
+
 
 // Retirer un produit d'une commande existante
 exports.retirerProduit = async (req, res) => {
