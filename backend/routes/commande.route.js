@@ -12,6 +12,9 @@ module.exports = app => {
     router.patch('/retirer-produit', commandes.retirerProduit);
 
 
+    // Afficher tous les produits d'une commande
+    router.get('/:id/afficher-produits', commande.afficherProduits);
+
     // Effectuer le paiement d'une commande
     router.post('/:id/paiement', commandes.effectuerPaiement);
 

@@ -2,11 +2,11 @@ const db = require("../models");
 
 const Commande = db.commandes;
 const Produit = db.products
-const User= db.users
+// const User= db.users
 
 // Créer une commande
 exports.creerCommande = async (req, res) => {
-  const { proprietaire, prixTotal } = req.body;
+  const { proprietaire } = req.body;
   let verifCommande = await Commande.findOne({ proprietaire: req.body.proprietaire, paiementEffectue: false });
   if (verifCommande) {
     return res.status(404).json({ message: 'commande existe déjà' });
@@ -29,7 +29,7 @@ exports.creerCommande = async (req, res) => {
 
 // Ajouter un produit à une commande existante
 exports.ajouterProduit = async (req, res) => {
-  const { idProduit } = req.body;
+  const { idProduit, idProprietaire } = req.body;
 
   try {
     const produit = await Produit.findById(idProduit);
@@ -39,7 +39,7 @@ exports.ajouterProduit = async (req, res) => {
 
     // Vérifier si une commande existe déjà pour l'utilisateur
     // req.user._id="64208b32e6b4113831dbcc1e";
-    id="64208b32e6b4113831dbcc1e"
+    const id = await Commande.findById(idProprietaire);
     let commande = await Commande.findOne({ proprietaire: id, paiementEffectue: false });
 
     if (!commande) {
@@ -116,6 +116,21 @@ exports.effectuerPaiement = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
+
+// Afficher tous les produits d'une commande
+exports.afficherProduits = async (req, res) => {
+  try {
+    const commande = await Commande.findById(req.params.id);
+    if (!commande) {
+      return res.status(404).json({ message: 'Commande non trouvée' });
+    }
+    const produits = commande.produits;
+    res.json(produits);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
 
 // Supprimer une commande
 exports.supprimerCommande = async (req, res) => {
