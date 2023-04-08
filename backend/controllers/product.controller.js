@@ -56,10 +56,14 @@ exports.create = async (req, res) => {
 exports.getAllProduct = async (req, res) => {
   try {
     const name = req.query.name;
+    const category = req.query.category;
     var condition = name
     ? { name: { $regex: name, $options: "i" } }
     : {};
-    const products = await Product.find(condition);
+    if(category){
+      condition.category = category;
+    }
+    const products = await Product.find(condition).populate("vendeur");
     return res.status(200).json(products);
   } catch (error) {
     console.error(error);
@@ -101,13 +105,12 @@ exports.getAllProductByCategory = async (req, res) => {
      */
     const products = await Product.find({
       category: category,
-    }).populate("vendeur", "user");
+    }).populate("vendeur");
     if (!products) {
       return res
         .status(404)
         .json({ message: "Aucun produit trouvé pour cette catégorie" });
     }
-
     return res.status(200).json(products);
   } catch (error) {
     console.log(error);
@@ -146,12 +149,11 @@ exports.getAllProductByVendeur = async (req, res) => {
   }
 };
 
-exports.getNewProduts = async (req, res) => {
+exports.getNewProducts = async (req, res) => {
   try {
     const products = await Product.find()
       .sort({ createdAt: -1 })
-      .limit(10)
-      .populate("vendeur");
+      .limit(10);
     return res.status(200).json(products);
   } catch (error) {
     console.log(error);
@@ -167,6 +169,7 @@ exports.updateProduct = async (req, res) => {
   try {
     const idProduct = req.params.idProduct;
     let product = await Product.findById(idProduct);
+    console.log(idProduct)
     if (!product) {
       return res.status(404).json({ message: "Produit non trouvé" });
     }
@@ -217,14 +220,20 @@ exports.updateProduct = async (req, res) => {
 exports.deleteProduct = async (req, res) => {
   try {
     const idProduct = req.params.idProduct;
-    const product = Product.findByIdAndDelete(idProduct);
+    console.log(idProduct)
+    const product = await Product.findByIdAndDelete(idProduct);
 
     if (!product) {
       return res.status(404).json({ message: "Produit non trouvé" });
     }
+    fs.unlink(product.image, err => {
+      if (err) {
+        console.error(err);
+      }
+    });
     return res
       .status(200)
-      .json({ message: "Suppression complète du produit", product });
+      .json({ message: "Suppression complète du produit"});
   } catch (error) {
     console.log(error);
     return res.status(500).json({

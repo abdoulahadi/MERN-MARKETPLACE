@@ -1,43 +1,49 @@
 import React from "react";
-// import { useNavigate } from "react-router-dom";
+import {createUserDataService} from "../services/user.service";
+import { useNavigate } from "react-router-dom";
 
 export function Signup()  {
 
     const qs = ($item)=>{ return document.querySelector($item) }
 
     let response = '';
+    const navigate = useNavigate();
     
-    // const navigate = useNavigate();
         
-    const onSubmit = ()=>{
+    const onSubmit = (event)=>{
+        event.preventDefault(); 
         const username = qs(".username").value;
         const mail = qs(".mail").value;
         const password = qs(".pswd").value;
         console.log( { username, mail, password } );
         // navigate('/login');
-        fetch("http://localhost:8080/users", {
-            method : "POST",
-            crossDomain : true,
-            headers : { 
-                "Content-Type" : "application/json",
-                Accept: "application/json",
-                "Access-control-Allow-Origin":"*",
-            },
-            body : JSON.stringify({
-                username,
-                mail,
-                password
-            }),
-        })     
+        // fetch("http://localhost:8080/users", {
+        //     method : "POST",
+        //     crossDomain : true,
+        //     headers : { 
+        //         "Content-Type" : "application/json",
+        //         Accept: "application/json",
+        //         "Access-control-Allow-Origin":"*",
+        //     },
+        //     body : JSON.stringify({
+        //         username,
+        //         mail,
+        //         password
+        //     }),
+        // })  
+        const userDataService = createUserDataService();
+        userDataService.create(JSON.stringify({
+            username,
+            mail,
+            password
+        }))  
         .then(res => {
-            res.json()
-            // navigate('/')
+            navigate('/login')
         })
-        .then(res => { response = res })
         .catch(err => {
              console.log(err)
-            //  navigate('/profile')
-            });
+             navigate('/sign-up')
+        });
     }
  
     console.log(`La reponse est : ${response}`);

@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import {createUserDataService} from "../services/user.service";
 
  
 export function Login()  {
@@ -10,27 +11,28 @@ let response = '';
 
 const navigate = useNavigate();
     
-const onSubmit = ()=>{
+const onSubmit = (event)=>{
+    event.preventDefault(); 
     const mail = qs(".mail").value;
     const password = qs(".pswd").value;
     console.log( { mail, password } );
     // navigate('/');
-    fetch("http://localhost:8080/users/login" , {
-        method : "POST",
-        headers : { "Content-Type" : "application/json" },
-        body : JSON.stringify({
-            mail,
-            password 
-        })
-    })       
+    const userDataService = createUserDataService();
+    userDataService.login(JSON.stringify({
+        mail:mail,
+        password:password 
+    }))       
     .then(res => {
-        res.json()
-        navigate('/')
+        console.log(res.data.user)
+        sessionStorage.setItem("user",JSON.stringify(res.data.user))
+            navigate('/')
     })
-    .then(res => { response = res })
     .catch(err => {
+        
+        qs("#error").style.display = "block";
+        qs("#error span").innerHTML = err.response.data.error
          console.log(err)
-         navigate('/profile')
+        //  navigate('/sign-in')
         });
 }
 
@@ -50,7 +52,7 @@ return(
     <div className="item-form marge-top-10">
         <div className="inputs">
             <img src="./img/icons8-composing-mail-24.png" alt="Home icon" width="24px" height="24px"/>
-            <input type="text" name="mail" id="checkbox" className="input mail" placeholder="mail.." required />
+            <input type="text" name="mail" id="mail" className="input mail" placeholder="mail.." required />
         </div>
 
         <div className="inputs">
@@ -64,7 +66,7 @@ return(
     <input type="submit" className="btn-submit x-large font bold clr-white" value="Connect" />
 </form>
 
-<div className="x-large pad-10 bg-pink">
+<div className="x-large pad-10 bg-pink" style={{display:"none"}} id="error">
     <span className="clr-white">  </span>
 </div>
 

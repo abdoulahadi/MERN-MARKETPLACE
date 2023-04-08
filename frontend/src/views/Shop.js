@@ -1,11 +1,33 @@
-import React from "react";
-import { useParams } from "react-router-dom";
+/* eslint-disable jsx-a11y/anchor-is-valid */
+import React, { Component } from "react";
+import { createProductDataService } from "../services/product.service";
+// import { useParams } from "react-router-dom";
 
-export function Shop()  {
+export class Shop extends Component{
+    constructor(props){
+        super(props);
 
-    const qs = ($item)=>{ return document.querySelector($item) }
-    const {id} = useParams();
-    const data = [];
+        this.state={
+            data : [],
+            idVendeur:window.location.href.split("/")[4]
+        }
+    }
+    getShopByUser() {
+        const productDataService = createProductDataService();
+        productDataService.findByVendeur(this.state.idVendeur)
+          .then(res => {
+            this.setState({ data: res.data });
+            console.log(this.state.myshop);
+          })
+          .catch(err => err);
+      }
+    
+      componentDidMount() {
+        this.getShopByUser();
+      }
+    // const qs = ($item)=>{ return document.querySelector($item) }
+    // const {id} = useParams();
+    // const data = [];
  
     // fetch(`http://localhost:8080/product/${id}`)        
     //   .then(res => res.json())
@@ -13,7 +35,7 @@ export function Shop()  {
     //   .catch(err => err);
   
 
-   
+render(){ 
     return (
              
 <div className="">
@@ -24,10 +46,10 @@ export function Shop()  {
      {/*  ******************************** ARTICLES ***************************************/}
      <div className="row-md pad-20 large">
 
-    { data.map( row => ( 
+    { this.state.data.map( row => ( 
 
         <div className="">
-            <img src={'../img/'+row.image} alt="Home icon" width="240px" height="160px"/>
+            <img src={'http://localhost:8080/'+row.image} alt="Home icon" width="240px" height="160px"/>
             <div className="hashtag row-sb-md">
                 <div className="col">
                     <span className="clr-white"> { row.name } </span>
@@ -45,4 +67,5 @@ export function Shop()  {
 
 
     )
+}
 }

@@ -1,193 +1,331 @@
-import React from "react";
-import { useParams } from "react-router-dom";
+import React, { Component } from "react";
+import { createProductDataService } from "../services/product.service";
+import { createCategoryDataService } from "../services/category.service";
 
-export function Panel()  {
+export class Panel extends Component {
+  constructor(props) {
+    super(props);
+    this.qs = this.qs.bind(this);
+    this.qsa = this.qsa.bind(this);
+    this.addProduct = this.addProduct.bind(this);
+    this.hideModal = this.hideModal.bind(this);
+    this.hidePopup = this.hidePopup.bind(this);
+    this.getPathProfile = this.getPathProfile.bind(this);
+    this.submitAddProduct = this.submitAddProduct.bind(this);
+    this.handleDeleteProduct = this.handleDeleteProduct.bind(this);
+    this.retrieveCategories = this.retrieveCategories.bind(this);
 
-    const qs = ($item)=>{ return document.querySelector($item) }
-    const qsa = ($item) => { return document.querySelectorAll($item) }
-    const {id} = useParams();
-    // alert(id);
-    const data =  [
-            {
-                id : 1,
-                image : "senegal.jpg",
-                name : "Beaded Rhino Brooch",
-                price : "01.99",
-                description : "aaaa aaaa aaaaaaaaaaa aaaaaaaaa aaaaaaaa aaaaaaa aaaaa aaa aaaaaaaaaaaa aaaaaaa",
-                createdAt : "19/04/2004" 
-            },
-            {
-                id : 2,
-                image : "senegal.jpg",
-                name : "Beaded Rhino Brooch",
-                price : "08.99",
-                description : "bbbbb bbbbbb bbbbbbbbbb bbbbbbbb bbbbbbbbbbbbbb bbbbbbb bbbb bbb bbb bbbb bbbbbb",
-                createdAt : "19/04/2004" 
-            },
-            {
-                id : 3,
-                image : "senegal.jpg",
-                name : "Beaded Rhino Brooch",
-                price : "11.99",
-                description : "ccc ccccc ccccccccc ccccccc cccccc ccccccc ccccccccc ccccccc ccccccccc cccccccc",
-                createdAt : "19/04/2004" 
-            },
-            {
-                id : 4,
-                image : "senegal.jpg",
-                name : "Beaded Rhino Brooch",
-                price : "06.99",
-                description : "aaaa aaaa aaaaaaaaaaa aaaaaaaaa aaaaaaaa aaaaaaa aaaaa aaa aaaaaaaaaaaa aaaaaaa",
-                createdAt : "19/04/2004" 
-            },
-            {
-                id : 5,
-                image : "senegal.jpg",
-                name : "Beaded Rhino Brooch",
-                price : "13.99",
-                description : "bbbbb bbbbbb bbbbbbbbbb bbbbbbbb bbbbbbbbbbbbbb bbbbbbb bbbb bbb bbb bbbb bbbbbb",
-                createdAt : "19/04/2004" 
-            },
-            {
-                id : 6,
-                image : "senegal.jpg",
-                name : "Beaded Rhino Brooch",
-                price : "17.99",
-                description : "ccc ccccc ccccccccc ccccccc cccccc ccccccc ccccccccc ccccccc ccccccccc cccccccc",
-                createdAt : "19/04/2004" 
-            },
-            {
-                id : 7,
-                image : "senegal.jpg",
-                name : "Beaded Rhino Brooch",
-                price : "02.99",
-                description : "aaaa aaaa aaaaaaaaaaa aaaaaaaaa aaaaaaaa aaaaaaa aaaaa aaa aaaaaaaaaaaa aaaaaaa",
-                createdAt : "19/04/2004" 
-            },
-            {
-                id : 8,
-                image : "senegal.jpg",
-                name : "Beaded Rhino Brooch",
-                price : "30.99",
-                description : "bbbbb bbbbbb bbbbbbbbbb bbbbbbbb bbbbbbbbbbbbbb bbbbbbb bbbb bbb bbb bbbb bbbbbb",
-                createdAt : "19/04/2004" 
-            },
-            {
-                id : 9,
-                image : "senegal.jpg",
-                name : "Beaded Rhino Brooch",
-                price : "27.99",
-                description : "ccc ccccc ccccccccc ccccccc cccccc ccccccc ccccccccc ccccccc ccccccccc cccccccc",
-                createdAt : "19/04/2004" 
-            }
-        ];
+    this.state = {
+      data: [],
+      idVendeur: window.location.href.split("/")[4],
+      categories:[]
+    };
+  }
+  qs = $item => {
+    return document.querySelector($item);
+  };
+  qsa = $item => {
+    return document.querySelectorAll($item);
+  };
+  // const {id} = useParams();
+  // alert(id);
 
-    // fetch(`http://localhost:8080/product/${id}`)        
-    //   .then(res => res.json())
-    //   .then(res => { data = res} )
-    //   .catch(err => err);
-  
+  // fetch(`http://localhost:8080/product/${id}`)
+  //   .then(res => res.json())
+  //   .then(res => { data = res} )
+  //   .catch(err => err);
+  getShopByUser() {
+    const productDataService = createProductDataService();
+    productDataService
+      .findByVendeur(this.state.idVendeur)
+      .then(res => {
+        this.setState({ data: res.data });
+        console.log(this.state.myshop);
+      })
+      .catch(err => err);
+  }
 
+  componentDidMount() {
+    this.getShopByUser();
+    this.retrieveCategories();
+  }
+  retrieveCategories() {
+    const categoryDataService = createCategoryDataService();
+    categoryDataService
+      .getAllCategories()
+      .then(response => {
+        this.setState({
+          categories: response.data,
+        });
+      })
+      .catch(e => {
+        console.log(e);
+      });
+  }
+  submitAddProduct(event) {
+    event.preventDefault();
 
+    const form = event.target;
+    const formData = new FormData(form);
+    // const idVendeur = window.location.href.split("/")[4];
+    formData.append("vendeur", this.state.idVendeur);
+    const productDataService = createProductDataService("multipart/form-data");
+    productDataService
+      .create(formData)
+      .then(data => {
+        this.getShopByUser();
+        console.log(data);
+        this.qs(".modal")[0].style.display = "none";
+        form.reset();
+      })
+      .catch(error => console.error(error));
 
-const addProduct = () => { qsa(".modal")[0].style.display="block" };
+    // console.log(this.state.user);
+  }
 
-const hideModal = () => { qsa(".modal")[0].style.display="none" };
+  handleDeleteProduct(productId) {
+    const productDataService = createProductDataService();
+    productDataService
+      .delete(productId)
+      .then(() => {
+        // remove product from state by filtering out the deleted product
+        this.setState(prevState => ({
+          data: prevState.data.filter(product => product.id !== productId),
+        }));
+        this.getShopByUser();
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  }
 
-const delshop = () => { qsa(".modal")[1].style.display="block" };
+  addProduct = () => {
+    this.qsa(".modal")[0].style.display = "block";
+  };
 
-const hidePopup = () => { qsa(".modal")[1].style.display="none" };
+  hideModal = () => {
+    this.qsa(".modal")[0].style.display = "none";
+  };
 
-const getPathProfile = () => { qs("#path-img").innerText = qs("#photo-modal").value };
-    
-return (
-             
-<div className="">
+  delshop = () => {
+    this.qsa(".modal")[1].style.display = "block";
+  };
 
-     {/* ******************************* Modal ********************************* */} 
-    <div className="modal" >
-        <div className="modal-item pad-20 bg-white col-ctr">
-            <button id="btn-modal-hidden" className="font bold"  onClick={hideModal}> X </button>
+  hidePopup = () => {
+    this.qsa(".modal")[1].style.display = "none";
+  };
+
+  getPathProfile = () => {
+    this.qs("#path-img").innerText = this.qs("#photo-modal").value;
+  };
+
+  render() {
+    return (
+      <div className="">
+        {/* ******************************* Modal ********************************* */}
+        <div className="modal">
+          <div className="modal-item pad-20 bg-white col-ctr">
+            <button
+              id="btn-modal-hidden"
+              className="font bold"
+              onClick={this.hideModal}>
+              {" "}
+              X{" "}
+            </button>
             <fieldset className="border">
-                <legend className="font clr-gray"> New product </legend>
-                    <div className="x-large col gap-20"> 
-                        <div className="col">
-                            <div className="row-ctr gap-20">
-                                <label htmlFor="photo-modal" id="add-img" className="pad-10 row-ctr marge-top-10" onChange={getPathProfile}> 
-                                    <img src="../img/icons8-camera-30.png" alt=""/>   
-                                    <input type="file" name="" id="photo-modal" /> 
-                                </label>
-                                <span className="clr-gray sml-font" id="path-img" >  </span>
-                            </div>
-                            <div className="inputs marge-top-10">
-                                <input type="text" name="mail" id="checkbox" className="input" placeholder="price" required />
-                            </div>
-                            <div className="inputs marge-top-10">
-                                <select name="" id="" >
-                                    <option value=""> value 1 </option>
-                                    <option value=""> value 2 </option>
-                                </select>
-                            </div>
-                            <textarea name="" id="" cols="30" rows="5" className="border marge-top-10" placeholder="Description"></textarea>  
-                        </div>
-                        <input type="submit" id="btn-submit-add-product" onClick={hideModal} className="link-submit font bold clr-white marge-top-10" value="Save" />
-                    </div> 
-            </fieldset>
-        </div>
-    </div>
-
- {/* ******************************* Modal ********************************* */}
-
-    <div className="modal">
-        <div className="modal-item pad-20 bg-white">
-            <button id="btn-modal-hidden" className="font bold"  onClick={hidePopup}> X </button>
-            <div className="x-large col gap-20 pad-20"> 
-                <div className="col-ctr gap-20">
-                    <span className="clr-gray font" id="path-img" >  Would you really delete your shop </span>
-                    <div className="col">
-                        <input type="submit" id="btn-submit-add-product" onClick={hidePopup} className="link-submit bold clr-white marge-top-10" value="YES" />    
+              <legend className="font clr-gray"> New product </legend>
+              <div className="x-large col gap-20">
+                <form onSubmit={this.submitAddProduct}>
+                  <div className="col">
+                    <div className="row-ctr gap-20">
+                      <label
+                        htmlFor="photo-modal"
+                        id="add-img"
+                        className="pad-10 row-ctr marge-top-10"
+                        onChange={this.getPathProfile}>
+                        <img src="../img/icons8-camera-30.png" alt="" />
+                        <input type="file" name="image" id="photo-modal" />
+                      </label>
+                      <span className="clr-gray sml-font" id="path-img">
+                        {" "}
+                      </span>
                     </div>
-                </div>              
-            </div> 
+                    <div className="inputs marge-top-10">
+                      <input
+                        type="text"
+                        name="name"
+                        id="name"
+                        className="input"
+                        placeholder="name"
+                        required
+                      />
+                    </div>
+                    <div className="inputs marge-top-10">
+                      <input
+                        type="text"
+                        name="price"
+                        id="price"
+                        className="input"
+                        placeholder="price"
+                        required
+                      />
+                    </div>
+                    <div className="inputs marge-top-10">
+                      <select name="category" id="category">
+                      <option value="">-- Sélectionner une catégorie --</option>
+                    {this.state.categories.map(category => (
+                      <option key={category.name}>{category.name}</option>
+                    ))}
+                      </select>
+                    </div>
+                    <textarea
+                      name="description"
+                      id="description"
+                      cols="30"
+                      rows="5"
+                      className="border marge-top-10"
+                      placeholder="Description"></textarea>
+                  </div>
+                  <input
+                    type="submit"
+                    id="btn-submit-add-product"
+                    onClick={this.hideModal}
+                    className="link-submit font bold clr-white marge-top-10"
+                    value="Save"
+                  />
+                </form>
+              </div>
+            </fieldset>
+          </div>
         </div>
-    </div>
 
-    {/* ******************************* PALETTE ********************************* */}
-     
-    <div className="palette col bg-white border">
-        <button id="add-product-btn" onClick={addProduct}> <img src="../img/icons8-add-new-50.png" alt="Home icon" title="add product" width="24px" height="24px"/> </button>
-        <a href="/" > <img src="../img/icons8-settings-50.png" alt="Home icon" title="accounting" width="24px" height="24px"/> </a>
-        <button id="add-product-btn" onClick={delshop}> <img src="../img/icons-delete-trash-48.png" alt="Home icon" title="delete shop" width="24px" height="24px"/> </button>
-        <a href="my-shop" className=""> <img src="../img/icons8-go-back-30.png" alt="Home icon" title="back" width="24px" height="24px"/> </a>
-    </div>
-    
-    <div className="bg-gray pad-20 large">
-        <span className="x-font clr-bleue marge row"> All my shop's product </span>
-    </div>
+        {/* ******************************* Modal ********************************* */}
 
-     {/*  ******************************** ARTICLES ***************************************/}
-     <div className="row-md pad-20 large">
-
-    { data.map( row => ( 
-
-        <div className="">
-            <img src={'../img/'+row.image} alt="Home icon" width="240px" height="160px"/>
-            <div className="hashtag row-sb-md">
+        <div className="modal">
+          <div className="modal-item pad-20 bg-white">
+            <button
+              id="btn-modal-hidden"
+              className="font bold"
+              onClick={this.hidePopup}>
+              {" "}
+              X{" "}
+            </button>
+            <div className="x-large col gap-20 pad-20">
+              <div className="col-ctr gap-20">
+                <span className="clr-gray font" id="path-img">
+                  {" "}
+                  Would you really delete your shop{" "}
+                </span>
                 <div className="col">
-                    <span className="clr-white"> { row.name } </span>
-                    <span className="sml-font clr-white"> { '$ '+row.price }  </span>
+                  <input
+                    type="submit"
+                    id="btn-submit-add-product"
+                    onClick={this.hidePopup}
+                    className="link-submit bold clr-white marge-top-10"
+                    value="YES"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ******************************* PALETTE ********************************* */}
+
+        <div className="palette col bg-white border">
+          <button id="add-product-btn" onClick={this.addProduct}>
+            {" "}
+            <img
+              src="../img/icons8-add-new-50.png"
+              alt="Home icon"
+              title="add product"
+              width="24px"
+              height="24px"
+            />{" "}
+          </button>
+          <a href="/">
+            {" "}
+            <img
+              src="../img/icons8-settings-50.png"
+              alt="Home icon"
+              title="accounting"
+              width="24px"
+              height="24px"
+            />{" "}
+          </a>
+          <button id="add-product-btn" onClick={this.delshop}>
+            {" "}
+            <img
+              src="../img/icons-delete-trash-48.png"
+              alt="Home icon"
+              title="delete shop"
+              width="24px"
+              height="24px"
+            />{" "}
+          </button>
+          <a href="/my-shop" className="">
+            {" "}
+            <img
+              src="../img/icons8-go-back-30.png"
+              alt="Home icon"
+              title="back"
+              width="24px"
+              height="24px"
+            />{" "}
+          </a>
+        </div>
+
+        <div className="bg-gray pad-20 large">
+          <span className="x-font clr-bleue marge row">
+            {" "}
+            All my shop's product{" "}
+          </span>
+        </div>
+
+        {/*  ******************************** ARTICLES ***************************************/}
+        <div className="row-md pad-20 large">
+          {this.state.data.map(row => (
+            <div className="">
+              <img
+                src={"http://localhost:8080/" + row.image}
+                alt="Home icon"
+                width="240px"
+                height="160px"
+              />
+              <div className="hashtag row-sb-md">
+                <div className="col">
+                  <span className="clr-white"> {row.name} </span>
+                  <span className="sml-font clr-white">
+                    {" "}
+                    {"$ " + row.price}{" "}
+                  </span>
                 </div>
                 <div className="row">
-                    <a href={'/modify-product/'+row.id}> <img src="../img/icons8-eye-24.png" title="modify" alt="Home icon" width="24px" height="24px"/> </a>
-                    <a href={'/del?id='+row.id}> <img src="../img/icons8-delete-trash-48.png" title="delete" alt="Home icon" width="24px" height="24px"/> </a>
+                  <a href={"/modify-product/" + row.id}>
+                    {" "}
+                    <img
+                      src="../img/icons8-eye-24.png"
+                      title="modify"
+                      alt="Home icon"
+                      width="24px"
+                      height="24px"
+                    />{" "}
+                  </a>{" "}
+                  <img
+                    src="../img/icons8-delete-trash-48.png"
+                    title="delete"
+                    alt="Home icon"
+                    width="24px"
+                    height="24px"
+                    onClick={() => this.handleDeleteProduct(row.id)}
+                    style={{ cursor: "pointer" }}
+                  />{" "}
                 </div>
+              </div>
             </div>
+          ))}
         </div>
-    )) }  
-
-    </div>
-</div>
-
-
-    )
-    }
+      </div>
+    );
+  }
+}

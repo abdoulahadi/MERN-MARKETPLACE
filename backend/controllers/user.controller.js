@@ -23,11 +23,11 @@ exports.create = async (req, res) => {
 
 
 exports.login = async (req, res) => {
-  const { username, password } = req.body;
+  const { mail, password } = req.body;
 
   try {
     // Vérifie si l'utilisateur existe
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ mail:mail });
     if (!user) {
       return res.status(401).json({ error: 'Invalid username' });
     }

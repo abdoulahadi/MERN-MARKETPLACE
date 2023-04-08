@@ -1,56 +1,122 @@
-import React , {Component} from 'react' ;
-
+/* eslint-disable jsx-a11y/anchor-is-valid */
+import React, { Component } from "react";
+import { createProductDataService } from "../services/product.service";
+import { createCategoryDataService } from "../services/category.service";
+import moment from "moment";
 export class Home extends Component {
- 
-   
-    constructor(props) {
-        super(props);
-        this.state = {  
-            latestProduct : [ 
-            {  id : 1 ,
-                image : "senegal.jpg",
-                name : "Beaded Rhino Brooch",
-                price : "27.99",
-                description : "aaaa aaaa aaaaaaaaaaa aaaaaaaaa aaaaaaaa aaaaaaa aaaaa aaa aaaaaaaaaaaa aaaaaaa",
-                createdAt : "19/04/2004" 
-            },
-            {
-                id : 2 ,
-                image : "senegal.jpg",
-                name : "Beaded Rhino Brooch",
-                price : "27.99",
-                description : "bbbbb bbbbbb bbbbbbbbbb bbbbbbbb bbbbbbbbbbbbbb bbbbbbb bbbb bbb bbb bbbb bbbbbb",
-                createdAt : "19/04/2004" 
-            },
-            {
-                id : 3 ,
-                image : "senegal.jpg",
-                name : "Beaded Rhino Brooch",
-                price : "27.99",
-                description : "ccc ccccc ccccccccc ccccccc cccccc ccccccc ccccccccc ccccccc ccccccccc cccccccc",
-                createdAt : "19/04/2004" 
-            }
-        ],
-            searchProduct : [],
-            allProduct : [],         
-        };
+  constructor(props) {
+    super(props);
+    this.retrieveProducts = this.retrieveProducts.bind(this);
+    this.retrieveCategories = this.retrieveCategories.bind(this);
+    this.retrieveLastProducts = this.retrieveLastProducts.bind(this);
+    this.getProductByCategory = this.getProductByCategory.bind(this);
+    this.getProductBySearch = this.getProductBySearch.bind(this);
+    this.qs = this.qs.bind(this);
 
-        this.state.searchProduct = this.state.latestProduct;
-        this.state.allProduct = this.state.latestProduct;
-    }
+    this.state = {
+      latestProduct: [],
+      searchProduct: [],
+      allProduct: [],
+      categories: [],
+      randomCategories: [],
+      selectCategories: [],
+      loading: true,
+      loadingSearch: false,
+    };
+  }
+  qs = $item => {
+    return document.querySelector($item);
+  };
+  componentDidMount() {
+    this.retrieveProducts();
+    this.retrieveLastProducts();
+    this.retrieveCategories();
+  }
 
-//  getLatestProduct() {
+  retrieveProducts() {
+    const productDataService = createProductDataService();
+    productDataService
+      .getAll()
+      .then(response => {
+        this.setState({
+          allProduct: response.data,
+          loading: false,
+        });
+      })
+      .catch(e => {
+        console.log(e);
+      });
+  }
+  retrieveCategories() {
+    const categoryDataService = createCategoryDataService();
+    categoryDataService
+      .getAllCategories()
+      .then(response => {
+        const random = response.data
+          .sort(() => 0.5 - Math.random())
+          .slice(0, 3); // Choix de 3 catégories au hasard
+        const select = response.data.filter(
+          category => !random.includes(category)
+        );
+        this.setState({
+          categories: response.data,
+          randomCategories: random,
+          selectCategories: select,
+        });
+      })
+      .catch(e => {
+        console.log(e);
+      });
+  }
+  retrieveLastProducts() {
+    const productDataService = createProductDataService();
+    productDataService
+      .getNewProduct()
+      .then(response => {
+        this.setState({
+          latestProduct: response.data,
+        });
+      })
+      .catch(e => {
+        console.log(e);
+      });
+  }
+
+  //  getLatestProduct() {
   //   fetch( "http://localhost:9000/latestProduct/" )
   //     .then(res => res.json())
   //     .then(res => this.setState({ latestProduct : res }))
   //     .catch(err => err);
   // }
-//  getProductByCategory() {
-  //   fetch( {'http://localhost:9000/productBycategory/':category} )
-  //     .then(res => res.json())
-  //     .then(res => this.setState({ latestProduct : res }))
-  //     .catch(err => err);
-  // }
+  getProductBySearch(event) {
+    const name = event.target.value;
+    if (name !== "") {
+      this.setState({
+        loadingSearch: true,
+      });
+      const category = this.qs("#search_category").value;
+      const productDataService = createProductDataService();
+      productDataService
+        .findByName(name, category)
+        .then(res =>
+          this.setState({ searchProduct: res.data, loadingSearch: false })
+        )
+        .catch(err => err);
+    }
+    this.setState({
+      searchProduct: [],
+    });
+  }
+  getProductByCategory(category) {
+    this.setState({
+      loading: true,
+    });
+    const productDataService = createProductDataService();
+    productDataService
+      .findByCategory(category)
+      .then(res => this.setState({ allProduct: res.data, loading: false }))
+      .catch(err => err);
+  }
   //  getProductBySerch() {
   //   fetch("http://localhost:9000/productBySearch")
   //     .then(res => res.json())
@@ -60,125 +126,220 @@ export class Home extends Component {
 
   // componentDidMount() {
   //   this.getLatestProduct();
-  //  this.getProductByCategory();  
+  //  this.getProductByCategory();
   // }
 
-render() {
-
-return ( 
-
-<div>
-    
-<div className="x-row pad-20 gap-20">
-  
- {/*  ******************************** RIGHT BOX ***************************************/}
-        <div className="large-7 col">
-        {/* ******************************** FIRST ITEM OF RIGHT BOX ***************************************/}
-            <div className="x-large col shadow"> 
-                {/* ******************************** SEARCH BAR ***************************************/}
-                <div className="row bg-gray pad-20 x-large">
-                    <div className="col">
-                        <span className="sml-font clr-gray"> Select category </span>
-                        <select name="" id="" className="select">
-                            <option value=""> value 1 </option>
-                            <option value=""> value 2 </option>
-                        </select>
-                    </div>
-                    <div className="col">
-                        <span className="sml-font clr-gray"> Select product </span>
-                        <div className="row">
-                            <input type="text" name="" id="" className="search-field" placeholder="product" />
-                            <button type="submit" className="search-btn row-ctr"> 
-                                <img src="./img/icons8-search-50.png" alt="Home icon" width="24px" height="24px"/>
-                            </button>
-                        </div>
-                    </div>      
+  render() {
+    return (
+      <div>
+        <div className="x-row pad-20 gap-20">
+          {/*  ******************************** RIGHT BOX ***************************************/}
+          <div className="large-7 col">
+            {/* ******************************** FIRST ITEM OF RIGHT BOX ***************************************/}
+            <div className="x-large col shadow">
+              {/* ******************************** SEARCH BAR ***************************************/}
+              <div className="row bg-gray pad-20 x-large">
+                <div className="col">
+                  <span className="sml-font clr-gray"> Select category </span>
+                  <select className="select" id="search_category">
+                    <option value="">-- Sélectionner une catégorie --</option>
+                    {this.state.categories.map(category => (
+                      <option key={category.name}>{category.name}</option>
+                    ))}
+                  </select>
                 </div>
-                
-                {/********************************* ARTICLES ***************************************/} 
-                <div className="row-md pad-20 x-large">
-                { this.state.searchProduct.map( row => (     
+                <div className="col">
+                  <span className="sml-font clr-gray"> Select product </span>
+                  <div className="row">
+                    <input
+                      type="text"
+                      name="search"
+                      id="search"
+                      className="search-field"
+                      placeholder="product"
+                      onChange={this.getProductBySearch}
+                    />
+                    <button type="submit" className="search-btn row-ctr">
+                      <img
+                        src="./img/icons8-search-50.png"
+                        alt="Home icon"
+                        width="24px"
+                        height="24px"
+                      />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/********************************* ARTICLES ***************************************/}
+
+              <div className="row-md pad-20 x-large">
+                {this.state.loadingSearch ? (
+                  <span className="sr-only">Loading...</span>
+                ) : (
+                  this.state.searchProduct.map(row => (
                     <div key={row.id}>
-                        <img src={"./img/" + row.image} alt="Home icon" width="260px" height="160px"/>
-                        <div className="hashtag row-sb-md">
-                            <div className="col">
-                                <span className="clr-white"> {row.name} </span>
-                                <span className="sml-font clr-white"> {'$ '+ row.price} </span>
-                            </div>
-                            <a href=""> <img src="./img/icons8-shopping-cart-24.png" alt="Home icon" width="24px" height="24px"/> </a>
+                      <img
+                        src={"http://localhost:8080/" + row.image}
+                        alt="Home icon"
+                        width="260px"
+                        height="160px"
+                      />
+                      <div className="hashtag row-sb-md">
+                        <div className="col">
+                          <span className="clr-white"> {row.name} </span>
+                          <span className="sml-font clr-white">
+                            {" "}
+                            {"$ " + row.price}{" "}
+                          </span>
                         </div>
-                    </div>   
-                 ))}    
-                </div>
-            </div>
-        {/********************************* SECOND ITEM OF RIGHT BOX ***************************************/}
-            <div className="x-large col shadow marge-top-10"> 
-                <div className="col bg-gray gap-10 x-large">
-                    <span className="font clr-bleue bold marge"> Explore by category </span>
-                    <div className="row">
-                        <select name="" id="" className="btn-explore">
-                            <option value=""> value 1 </option>
-                            <option value=""> value 2 </option>
-                        </select>
-                        <button className="btn-explore" > Tools </button>
-                        <button className="btn-explore" > Shoes </button>
-                        <button className="btn-explore" > Sports </button>
+                        <a href="#">
+                          {" "}
+                          <img
+                            src="./img/icons8-shopping-cart-24.png"
+                            alt="Home icon"
+                            width="24px"
+                            height="24px"
+                          />{" "}
+                        </a>
+                      </div>
                     </div>
-                </div>
-
-                <div className="row-md pad-20">
-                { this.state.allProduct.map( row => (     
-                    <div className="">
-                        <img src={"./img/" + row.image} alt="Home icon" width="260px" height="160px"/>
-                        <div className="hashtag row-sb-md">
-                            <div className="col">
-                                <span className="clr-white"> {row.name} </span>
-                                <span className="sml-font clr-white"> {'$ '+ row.price} </span>
-                            </div>
-                            <a href=""> <img src="./img/icons8-shopping-cart-24.png" alt="Home icon" width="24px" height="24px"/> </a>
-                        </div>
-                    </div>   
-                 ))}
-                </div>
+                  ))
+                )}
+              </div>
             </div>
+            {/********************************* SECOND ITEM OF RIGHT BOX ***************************************/}
+            <div className="x-large col shadow marge-top-10">
+              <div className="col bg-gray gap-10 x-large">
+                <span className="font clr-bleue bold marge">
+                  {" "}
+                  Explore by category{" "}
+                </span>
+                <div className="row">
+                  <select
+                    className="btn-explore"
+                    onChange={event =>
+                      this.getProductByCategory(event.target.value)
+                    }>
+                    <option value="">-- Sélectionner une catégorie --</option>
+                    {this.state.selectCategories.map(category => (
+                      <option key={category.name}>{category.name}</option>
+                    ))}
+                  </select>
+                  {this.state.randomCategories.map(category => (
+                    <button
+                      key={category.name}
+                      className="btn-explore"
+                      onClick={() => this.getProductByCategory(category)}>
+                      {category.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-        </div>    
-{/********************************* LEFT BOX ***************************************/}       
-        <div className="large-3 bg-gray col pad-30 shadow">
+              <div className="row-md pad-20">
+                {this.state.loading ? (
+                  <span className="sr-only">Loading...</span>
+                ) : this.state.allProduct.length === 0 ? (
+                  <span className="sr-only">Aucun produit</span>
+                ) : (
+                  this.state.allProduct.map(row => (
+                    <div className="">
+                      <img
+                        src={"http://localhost:8080/" + row.image}
+                        alt="Home icon"
+                        width="260px"
+                        height="160px"
+                      />
+                      <div className="hashtag row-sb-md">
+                        <div className="col">
+                          <span className="clr-white"> {row.name} </span>
+                          <span className="sml-font clr-white">
+                            {" "}
+                            {"$ " + row.price}{" "}
+                          </span>
+                        </div>
+                        <a href="">
+                          {" "}
+                          <img
+                            src="./img/icons8-shopping-cart-24.png"
+                            alt="Home icon"
+                            width="24px"
+                            height="24px"
+                          />{" "}
+                        </a>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+          {/********************************* LEFT BOX ***************************************/}
+          <div className="large-3 bg-gray col pad-30 shadow">
             <div className="row">
-                <span className="font clr-bleue bold"> Latest Products </span>
+              <span className="font clr-bleue bold"> Latest Products </span>
             </div>
             <div className="large-3 col-md">
-            {/********************************* ITEMS OF LEFT BOX ***************************************/}
+              {/********************************* ITEMS OF LEFT BOX ***************************************/}
 
-        {this.state.latestProduct.map(row => (    
-            <div className="latest-item row-ctr pad-5">
-                <img src={"./img/"+row.image } alt="Home icon" width="100px" height="120px"/>
-                <div className="col pad-10 x-large">
-                    <span className="clr-bleue bold row"> {row.name} </span>
-                    <div className="x-large row">
-                        <img src="./img/icons8-shopping-cart-24.png" alt="Home icon" width="24px" height="24px"/>
-                        <span className="clr-bleue"> Happy Feet</span>
-                    </div>
-                    <span className="sml-font clr-bleue x-large row"> {'added on '+ row.createdAt } </span>
-                    <div className="row-sb x-large">
-                        <span className="clr-bleue"> {'$ '+ row.price } </span>
+              {this.state.loading ? (
+                <span className="sr-only">Loading...</span>
+              ) : (
+                this.state.latestProduct.map(row => (
+                  <div className="latest-item row-ctr pad-5">
+                    <img
+                      src={"http://localhost:8080/" + row.image}
+                      alt="Home icon"
+                      width="100px"
+                      height="120px"
+                    />
+                    <div className="col pad-10 x-large">
+                      <span className="clr-bleue bold row"> {row.name} </span>
+                      <div className="x-large row">
+                        <img
+                          src="./img/icons8-shopping-cart-24.png"
+                          alt="Home icon"
+                          width="24px"
+                          height="24px"
+                        />
+                        <span className="clr-bleue"> {row.vendeur.name}</span>
+                      </div>
+                      <span className="sml-font clr-bleue x-large row">
+                        {" "}
+                        {"added on " + moment(row.createdAt).format("MMMM Do YYYY")}{" "}
+                      </span>
+                      <div className="row-sb x-large">
+                        <span className="clr-bleue"> {"$ " + row.price} </span>
                         <div className="row">
-                            <a href=""> <img src="./img/icons8-eye-24.png" alt="Home icon" width="24px" height="24px"/> </a>
-                            <a href=""> <img src="./img/icons8-shopping-cart-24.png" alt="Home icon" width="24px" height="24px"/> </a>
+                          <a href="">
+                            {" "}
+                            <img
+                              src="./img/icons8-eye-24.png"
+                              alt="Home icon"
+                              width="24px"
+                              height="24px"
+                            />{" "}
+                          </a>
+                          <a href="">
+                            {" "}
+                            <img
+                              src="./img/icons8-shopping-cart-24.png"
+                              alt="Home icon"
+                              width="24px"
+                              height="24px"
+                            />{" "}
+                          </a>
                         </div>
+                      </div>
                     </div>
-                </div>
+                  </div>
+                ))
+              )}
             </div>
-        ))}
-            
-            </div>
-
+          </div>
         </div>
-    </div>
-
-
-</div>
-  )
-}
+      </div>
+    );
+  }
 }

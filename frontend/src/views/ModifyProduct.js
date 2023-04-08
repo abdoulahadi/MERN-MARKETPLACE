@@ -1,62 +1,84 @@
-import React from "react";
-import { useParams } from "react-router-dom";
+import React, { Component } from "react";
+import { createProductDataService } from "../services/product.service";
+// import { useNavigate } from "react-router-dom";
+// import { useParams } from "react-router-dom";
 
-export function ModifyProduct()  {
+export class ModifyProduct extends Component{
+    constructor(propos){
+        super(propos);
+        this.qs = this.qs.bind(this);
+        this.onSubmit = this.onSubmit.bind(this);
+        this.getPathProfile = this.getPathProfile.bind(this);
+        this.handleChange = this.handleChange.bind(this);
+        
 
-    const qs = ($item)=>{ return document.querySelector($item) }
-    const response = '' ;
-    const {id} = useParams();
-    const data = 
-            {
-                id : 1,
-                image : "senegal.jpg",
-                name : "Beaded Rhino Brooch",
-                price : "01.99",
-                category: "t-shirt",
-                description : "aaaa aaaa aaaaaaaaaaa aaaaaaaaa aaaaaaaa aaaaaaa aaaaa aaa aaaaaaaaaaaa aaaaaaa",
-                createdAt : "19/04/2004" 
-            }
+        this.state = {
+            data :{},
+            idProduct:window.location.href.split("/")[4]
+        }
+    }
+     qs = ($item)=>{ return document.querySelector($item) }
+    // const response = '' ;
+    // const {id} = useParams();
+     
     
     
     // fetch(`http://localhost:8080/product/${id}`)        
     //   .then(res => res.json())
     //   .then(res => { data = res} )
     //   .catch(err => err);
-
+    getProductById() {
+        const productDataService = createProductDataService();
+        productDataService.get(this.state.idProduct)
+          .then(res => {
+            this.setState({ data: res.data });
+          })
+          .catch(err => err);
+      }
     
-const onSubmit = ()=>{
-    const price = qs(".price").value;
-    const category = qs(".category").value;
-    const description = qs(".description").value;
-    console.log( { price, category, description } );
+      componentDidMount() {
+        this.getProductById()
+      }
+    
+ onSubmit = (e)=>{
+    e.preventDefault();
 
-    // fetch( "http://localhost:8080/shops" , {
-    //     method : "POST",
-    //     headers : { "Content-Type" : "application/json" },
-    //     body : JSON.stringify({
-    //        price,
-    //        category,
-    //        description
-    //     })
-    // })       
-    // .then(res => {
-    //     res.json()
-    // })
-    // .then(res => { response = res })
-    // .catch(err => err);
+    const form = e.target;
+    const formData = new FormData(form);
+
+    const productDataServiceMultipart = createProductDataService("multipart/form-data");
+    productDataServiceMultipart.update(this.state.data.id,formData)
+    .then((res)=>{
+        console.log(res.data)
+    })
+    .catch((error)=>{
+        console.log(error);
+    })
 }
+handleChange(event) {
+    const target = event.target;
+    const value = target.value;
+    const name = target.name;
+
+    this.setState(prevState => ({
+      data: {
+        ...prevState.data,
+        [name]: value
+      }
+    }));
+  }
 
 
-const getPathProfile = ()=> { qs("#path-img-modif-product").innerText = qs("#field-img-value").value }
-    
-return (  
-  <form onSubmit={ onSubmit }> 
+getPathProfile = ()=> { this.qs("#path-img-modif-product").innerText = this.qs("#field-img-value").value }
+render(){
+return ( 
+  <form onSubmit={ this.onSubmit }> 
     <div className="large row-sml gap-20">
         <div className="large-5 gap-20"> 
             <div className="col border x-large bg-white gap-10 pad-20 radius-20 col-ctr">
                 <span className="clr-gray sml-font" id="path-img-modif-product"> Choose an image of your product </span>
-                <label htmlFor="field-img-value" onChange={ getPathProfile }> 
-                     <img src={'../img/'+ data.image } alt="Home icon" width="240px" height="160px"/>   
+                <label htmlFor="field-img-value" onChange={ this.getPathProfile }> 
+                     <img src={'http://localhost:8080/'+ this.state.data.image } alt="Home icon" width="240px" height="160px"/>   
                      <input type="file" name="image" id="field-img-value" /> 
                 </label>                      
             </div> 
@@ -68,18 +90,19 @@ return (
                      <span className="clr-gray"> Additionnal information </span>
                 </div>
                 <div className="col">
+                <div className="inputs marge-top-10">
+                                <input type="text" name="name" id="name" className="input price" placeholder="price" required value={ this.state.data.name } onChange={this.handleChange}/>
+                            </div>
                            <div className="inputs marge-top-10">
-                                <input type="price" name="mail" id="checkbox" className="input price" placeholder="price" required value={ data.price } />
+                                <input type="text" name="price" id="price" className="input price" placeholder="price" required value={ this.state.data.price } onChange={this.handleChange} />
                             </div>
                             <div className="inputs marge-top-10 category">
-                                <select name="category" id="" >
-                                    <option value=""> value 1 </option>
-                                    <option value=""> value 2 </option>
+                                <select name="category" id="category" value={ this.state.data.category }>
+                                    <option value="Catégorie 1"> Catégorie 1 </option>
+                                    <option value="Catégorie 2"> Catégorie 2 </option>
                                 </select>
                             </div>
-                            <textarea name="description" id="" cols="30" rows="8" className="border marge-top-10 description" placeholder="Description">
-                                { data.description }    
-                            </textarea>  
+                            <textarea name="description" id="description" cols="30" rows="8" className="border marge-top-10 description" placeholder="Description" value={ this.state.data.description } onChange={this.handleChange} />
                  </div>
                  <input type="submit" className="link-submit font bold clr-white marge-top-30" value="Save info"/>
             </div>
@@ -88,6 +111,6 @@ return (
     </div>
 
     </form>
-
     )
+}
 }

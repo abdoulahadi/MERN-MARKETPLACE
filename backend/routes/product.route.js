@@ -9,7 +9,7 @@ module.exports = app => {
   router.get("/", products.getAllProduct);
 
   // Avoir la liste des 10 nouveaux Produits
-  router.get("/newProucts",products.getNewProduts);
+  router.get("/newProducts",products.getNewProducts);
 
   // Avoir le produit en fonction du catégorie
   router.get("/:idProduct", products.getProductById);

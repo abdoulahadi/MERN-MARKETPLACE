@@ -1,24 +1,26 @@
 import React, {Component} from "react";
+import {createVendeurDataService} from "../services/vendeur.service";
 
 export class Allshop extends Component {
 
     constructor(props) {
         super(props);
         this.state = { 
-           allshop : props.data
+           allshop : []
         };
     }
-
-//  getShops() {
-//     fetch( "http://localhost:9000/shops" )       
-//       .then(res => res.json())
-//       .then(res => this.setState({ myshop  : res }))
-//       .catch(err => err);
-//   }
-
-  // componentDidMount() {
-  //   this.getShps();
-  // }
+    componentDidMount() {
+        this.getShps();
+      }
+    getShps(){
+        const vendeurDataService = createVendeurDataService();
+        vendeurDataService.getAll()
+          .then(response => {
+            console.log(response)
+            this.setState({ allshop  : response.data })
+          })
+          .catch(err => err);
+    }
 
 render() {    
 
@@ -28,7 +30,7 @@ return (
 
 {this.state.allshop.map( row => (   
    <a href={'/shop/'+row.id}> <div className="large shadow pad-10 row-sb-sml">
-        <img src={'../img/'+row.image} alt="Home icon" width="260px" height="160px"/>
+        <img src={"http://localhost:8080/" + row.image} alt={row.name} width="260px" height="160px"/>
         <div className="bg-grey pad-10 col">
             <span className="clr-gray row"> {row.description}  </span>
             <span className="clr-gray row"> shop : {row.name}  </span>

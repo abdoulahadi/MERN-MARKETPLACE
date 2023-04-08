@@ -5,7 +5,7 @@ const fs = require("fs");
 const Vendeur = db.vendeurs;
 
 exports.create = async (req, res) => {
-  upload.single('image')(req, res, async (err) => {
+  upload.single("image")(req, res, async err => {
     if (err instanceof multer.MulterError) {
       return res.status(400).json({ message: "Erreur lors du téléchargement de l'image." });
     } else if (err) {
@@ -48,7 +48,11 @@ exports.create = async (req, res) => {
 
 exports.getAllVendeur = async(req,res) =>{
   try {
-    const vendeurs = await Vendeur.find({isVerified: true}).populate("user");
+    const user = req.query.userId;
+    var condition = user
+    ? { isVerified: true, user: user }
+    : {isVerified: true};
+    const vendeurs = await Vendeur.find(condition).populate("user");
     return res.status(200).json(vendeurs);
   } catch (error) {
     console.log(error);
