@@ -8,6 +8,9 @@ module.exports = app => {
     // Ajouter un produit à une commande existante
     router.patch('/ajouter-produit', commandes.ajouterProduit);
 
+    // Retirer des produits d'une commande existante
+    router.patch('/retirer-produits', commandes.retirerProduits);
+
     // Retirer un produit d'une commande existante
     router.patch('/retirer-produit', commandes.retirerProduit);
 

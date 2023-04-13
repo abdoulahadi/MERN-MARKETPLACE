@@ -8,19 +8,22 @@ class CommandeDataService {
     return this.http.post("/commandes", data);
   }
 
-  addCart(id, data) {
-    return this.http.post(`/commandes/${id}/ajouter-produit`, data);
+  addCart(data) {
+    return this.http.patch("/commandes/ajouter-produit", data);
   }
-  withdrawCart(id, data) {
-    return this.http.post(`/commandes/${id}/retirer-produit`, data);
+  AllwithdrawCart(data) {
+    return this.http.patch("/commandes/retirer-produits", data);
+  }
+  OnewithdrawCart(data) {
+    return this.http.patch("/commandes/retirer-produit", data);
   }
 
   payment(id, data) {
     return this.http.post(`/commandes/${id}/paiement`, data);
   }
 
-  delete(id) {
-    return this.http.delete(`/commandes/${id}`);
+  getProductsCart(id){
+    return this.http.get(`/commandes/${id}/afficher-produits`);
   }
 }
 

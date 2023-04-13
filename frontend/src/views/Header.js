@@ -10,14 +10,17 @@ function navToggle() {
   qs(".nav-box").classList.toggle("toggle-nav-box");
 }
 
-export function Header() {
+export function Header(propos) {
+  const counts = propos.count;
   const navigate = useNavigate();
   const handleLogout = () => {
     // Supprime le sessionStorage de l'utilisateur
     sessionStorage.removeItem("user");
     // Redirection vers Home
-    navigate.apply("/");
+    propos.updateCartCount()
+    navigate("/");
   };
+
   return (
     <nav className="nav-bar x-large">
       <span className="nav-title"> Mern Marketplace</span>
@@ -39,14 +42,13 @@ export function Header() {
               ALL SHOPS
             </a>
             <a href="/cart" className="row-ctr nav-link">
-              <span>CART</span>
-              <img
-                src="../img/icons8-shopping-cart-48.png"
-                alt="Home icon"
-                width="24px"
-                height="24px"
-              />
-            </a>
+  <span>CART</span>
+  <div className="cart-icon-container">
+    <img src="../img/icons8-shopping-cart-48.png" alt="Cart icon" width="24px" height="24px" />
+    <span className="cart-item-count">{counts}</span>
+  </div>
+</a>
+
           </div>
 
           {sessionStorage.getItem("user") ? (

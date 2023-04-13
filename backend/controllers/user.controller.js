@@ -41,7 +41,7 @@ exports.login = async (req, res) => {
     const userData = {
       id: user._id,
       username: user.username,
-      email: user.email,
+      mail: user.mail,
     };
 
     // Envoie la réponse avec les informations de l'utilisateur connecté

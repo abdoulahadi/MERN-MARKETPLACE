@@ -2,12 +2,12 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import {createUserDataService} from "../services/user.service";
 
+import {createCommandeDataService} from "../services/commande.service";
+
  
-export function Login()  {
+export function Login(props)  {
 
 const qs = ($item)=>{ return document.querySelector($item) }
-
-let response = '';
 
 const navigate = useNavigate();
     
@@ -22,10 +22,48 @@ const onSubmit = (event)=>{
         mail:mail,
         password:password 
     }))       
-    .then(res => {
-        console.log(res.data.user)
-        sessionStorage.setItem("user",JSON.stringify(res.data.user))
-            navigate('/')
+    .then(res1 => {
+        sessionStorage.setItem("user",JSON.stringify(res1.data.user))
+        const commandeDataService = createCommandeDataService()
+
+        if(!localStorage.getItem("cart")){
+            commandeDataService.create(JSON.stringify({
+                proprietaire:JSON.parse(sessionStorage.getItem("user")).id
+            }))
+            .then((res2) => {
+                localStorage.setItem("commande",JSON.stringify({commande:res2.data.commande.id}))
+                props.updateCartCount()
+                navigate('/')
+            })
+        }
+        const idProprietaire = JSON.parse(sessionStorage.getItem("user")).id
+        console.log(idProprietaire)
+        const cart = JSON.parse(localStorage.getItem("cart"))
+        
+        const addCommandes = async (cart, idProprietaire) => {
+            let previousPromise = Promise.resolve();
+            const results = [];
+            for (const idProduct of cart) {
+              previousPromise = previousPromise.then(async() => {
+                return commandeDataService.addCart(JSON.stringify({
+                  idProduit: idProduct,
+                  idProprietaire: idProprietaire
+                }))
+                .then((res) => {
+                    results.push(res.data.commande.id)
+                });
+              });
+              await previousPromise;
+            }
+            return results[0]
+          };
+          addCommandes(cart, idProprietaire)
+        .then((responses)=>{
+            localStorage.setItem("commande",JSON.stringify({commande:responses}))
+            localStorage.removeItem("cart")
+            props.updateCartCount()
+            navigate("/cart");
+        })
     })
     .catch(err => {
         
@@ -36,7 +74,6 @@ const onSubmit = (event)=>{
         });
 }
 
-console.log(`La reponse est : ${response}`);
     
 return(
                     

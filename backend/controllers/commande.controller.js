@@ -7,9 +7,9 @@ const Produit = db.products
 // Créer une commande
 exports.creerCommande = async (req, res) => {
   const { proprietaire } = req.body;
-  let verifCommande = await Commande.findOne({ proprietaire: req.body.proprietaire, paiementEffectue: false });
+  let verifCommande = await Commande.findOne({ proprietaire: proprietaire, paiementEffectue: false });
   if (verifCommande) {
-    return res.status(404).json({ message: 'commande existe déjà' });
+    return res.status(200).json({commande:verifCommande});
   }
   try {
     const commande = new Commande({
@@ -39,14 +39,14 @@ exports.ajouterProduit = async (req, res) => {
 
     // Vérifier si une commande existe déjà pour l'utilisateur
     // req.user._id="64208b32e6b4113831dbcc1e";
-    const id = await Commande.findById(idProprietaire);
-    let commande = await Commande.findOne({ proprietaire: id, paiementEffectue: false });
+    // const id = await Commande.findById(idProprietaire);
+    let commande = await Commande.findOne({ proprietaire: idProprietaire, paiementEffectue: false });
 
     if (!commande) {
       // Si aucune commande n'existe, en créer une nouvelle
       commande = new Commande({
         produits: [produit._id],
-        proprietaire: id,
+        proprietaire: idProprietaire,
         prixTotal: produit.price
       });
 
@@ -54,7 +54,7 @@ exports.ajouterProduit = async (req, res) => {
     } else {
       // Ajouter le produit à la commande existante
       commande.produits.push(produit._id);
-      commande.prixTotal = parseInt(commande.prixTotal) + produit.price;
+      commande.prixTotal = parseFloat(commande.prixTotal) + produit.price;
       await commande.save();
     }
 
@@ -85,7 +85,7 @@ exports.retirerProduit = async (req, res) => {
     }
 
     commande.produits.splice(index, 1);
-    commande.prixTotal = parseInt(commande.prixTotal) - produit.price;    // Mettre à jour le prix total
+    commande.prixTotal = parseFloat(commande.prixTotal) - produit.price;    // Mettre à jour le prix total
 
      // Vérifier s'il ne reste plus aucun produit dans la commande
      if (commande.produits.length === 0) {
@@ -101,7 +101,47 @@ exports.retirerProduit = async (req, res) => {
     res.status(500).json({ message: 'Erreur serveur lors du retrait du produit de la commande' });
   }
 };
+// Retirer des produits d'une même Id d'une commande existante
+exports.retirerProduits = async (req, res) => {
+  const { idCommande, idProduit, idProduitCommande } = req.body;
 
+  try {
+    const commande = await Commande.findById(idCommande);
+
+    if (!commande) {
+      return res.status(404).json({ message: 'Commande introuvable' });
+    }
+
+    const produitsAvantSuppression = commande.produits.length;
+
+    commande.produits = commande.produits.filter((p) => p.toString() !== idProduit.toString() || p.idProduitCommande !== idProduitCommande);
+
+    const produitsApresSuppression = commande.produits.length;
+
+    if (produitsApresSuppression === produitsAvantSuppression) {
+      return res.status(404).json({ message: 'Produit introuvable dans la commande' });
+    }
+
+    const produit = await Produit.findById(idProduit);
+
+    if (produit) {
+      commande.prixTotal = parseFloat(commande.prixTotal) - produit.price * (produitsAvantSuppression - produitsApresSuppression); // mettre à jour le prix total
+    }
+
+    // Vérifier s'il ne reste plus aucun produit dans la commande
+    if (commande.produits.length === 0) {
+      await Commande.findByIdAndDelete(idCommande);
+      return res.json({ message: 'Commande supprimée car elle ne contient plus aucun produit',remove:true });
+    }
+
+    await commande.save();
+
+    res.json({ commande });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erreur serveur lors du retrait du produit de la commande' });
+  }
+};
 // Effectuer le paiement d'une commande
 exports.effectuerPaiement = async (req, res) => {
   try {
@@ -125,7 +165,8 @@ exports.afficherProduits = async (req, res) => {
       return res.status(404).json({ message: 'Commande non trouvée' });
     }
     const produits = commande.produits;
-    res.json(produits);
+    const prixTotal = commande.prixTotal
+    res.json({produits:produits, prixTotal:prixTotal});
   } catch (err) {
     res.status(400).json({ message: err.message });
   }

@@ -2,6 +2,7 @@
 import React, { Component } from "react";
 import { createProductDataService } from "../services/product.service";
 import { createCategoryDataService } from "../services/category.service";
+// import { createCommandeDataService } from "../services/commande.service";
 import moment from "moment";
 export class Home extends Component {
   constructor(props) {
@@ -11,6 +12,7 @@ export class Home extends Component {
     this.retrieveLastProducts = this.retrieveLastProducts.bind(this);
     this.getProductByCategory = this.getProductByCategory.bind(this);
     this.getProductBySearch = this.getProductBySearch.bind(this);
+    this.handleaddToCart = this.handleaddToCart.bind(this);
     this.qs = this.qs.bind(this);
 
     this.state = {
@@ -81,7 +83,9 @@ export class Home extends Component {
         console.log(e);
       });
   }
-
+async handleaddToCart(idProduit){
+  await this.props.addTocart(idProduit)
+}
   //  getLatestProduct() {
   //   fetch( "http://localhost:9000/latestProduct/" )
   //     .then(res => res.json())
@@ -193,7 +197,7 @@ export class Home extends Component {
                             {"$ " + row.price}{" "}
                           </span>
                         </div>
-                        <a href="#">
+                        <button  onClick={() => this.handleaddToCart(row.id)}>
                           {" "}
                           <img
                             src="./img/icons8-shopping-cart-24.png"
@@ -201,7 +205,7 @@ export class Home extends Component {
                             width="24px"
                             height="24px"
                           />{" "}
-                        </a>
+                        </button>
                       </div>
                     </div>
                   ))
@@ -244,7 +248,7 @@ export class Home extends Component {
                   <span className="sr-only">Aucun produit</span>
                 ) : (
                   this.state.allProduct.map(row => (
-                    <div className="">
+                    <div className="" key={row.id}>
                       <img
                         src={"http://localhost:8080/" + row.image}
                         alt="Home icon"
@@ -259,7 +263,7 @@ export class Home extends Component {
                             {"$ " + row.price}{" "}
                           </span>
                         </div>
-                        <a href="">
+                        <button  onClick={() => this.handleaddToCart(row.id)}>
                           {" "}
                           <img
                             src="./img/icons8-shopping-cart-24.png"
@@ -267,7 +271,7 @@ export class Home extends Component {
                             width="24px"
                             height="24px"
                           />{" "}
-                        </a>
+                        </button>
                       </div>
                     </div>
                   ))
@@ -287,7 +291,7 @@ export class Home extends Component {
                 <span className="sr-only">Loading...</span>
               ) : (
                 this.state.latestProduct.map(row => (
-                  <div className="latest-item row-ctr pad-5">
+                  <div className="latest-item row-ctr pad-5" key={row.id}>
                     <img
                       src={"http://localhost:8080/" + row.image}
                       alt="Home icon"
@@ -321,15 +325,15 @@ export class Home extends Component {
                               height="24px"
                             />{" "}
                           </a>
-                          <a href="">
-                            {" "}
-                            <img
-                              src="./img/icons8-shopping-cart-24.png"
-                              alt="Home icon"
-                              width="24px"
-                              height="24px"
-                            />{" "}
-                          </a>
+                          <button  onClick={() => this.handleaddToCart(row.id)}>
+                          {" "}
+                          <img
+                            src="./img/icons8-shopping-cart-24.png"
+                            alt="Home icon"
+                            width="24px"
+                            height="24px"
+                          />{" "}
+                        </button>
                         </div>
                       </div>
                     </div>
