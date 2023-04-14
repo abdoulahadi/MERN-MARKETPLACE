@@ -1,0 +1,63 @@
+[
+    {
+        "name": "Électronique",
+        "description": "Catégorie pour tous les articles électroniques"
+      },
+      {
+        "name": "Livres",
+        "description": "Catégorie pour tous les types de livres"
+      },
+      {
+        "name": "Vêtements",
+        "description": "Catégorie pour tous les articles vestimentaires"
+      },
+      {
+        "name": "Maison et Jardin",
+        "description": "Catégorie pour tous les articles pour la maison et le jardin"
+      },
+      {
+        "name": "Sports",
+        "description": "Catégorie pour tous les équipements et vêtements de sport"
+      },
+      {
+        "name": "Jouets",
+        "description": "Catégorie pour tous les types de jouets et jeux"
+      },
+      {
+        "name": "Alimentation et Boissons",
+        "description": "Catégorie pour tous les types de nourriture et boissons"
+      },
+      {
+        "name": "Bijoux",
+        "description": "Catégorie pour tous les types de bijoux et accessoires"
+      },
+      {
+        "name": "Beauté",
+        "description": "Catégorie pour tous les types de produits de beauté et cosmétiques"
+      },
+      {
+        "name": "Meubles",
+        "description": "Catégorie pour tous les types de meubles et articles de décoration"
+      },
+      {
+        "name": "Musique",
+        "description": "Catégorie pour tous les types d'instruments de musique et accessoires"
+      },
+      {
+        "name": "Art",
+        "description": "Catégorie pour tous les types de fournitures d'art et d'artisanat"
+      },
+      {
+        "name": "Fournitures pour Animaux de Compagnie",
+        "description": "Catégorie pour tous les types de fournitures et accessoires pour animaux de compagnie"
+      },
+      {
+        "name": "Fournitures de Bureau",
+        "description": "Catégorie pour tous les types de fournitures et équipements de bureau"
+      },
+      {
+        "name": "Outils et Amélioration de l'Habitat",
+        "description": "Catégorie pour tous les types d'outils et produits pour l'amélioration de l'habitat"
+      }
+]
+  

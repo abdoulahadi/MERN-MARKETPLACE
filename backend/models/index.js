@@ -10,8 +10,12 @@ db.mongoose = mongoose;
 
 db.url = dbConfig.url;
 /**
- * db.students = require("./student.model.js")(mongoose);
+ * 
  */
+db.users = require("./user.model.js")(mongoose);
+db.vendeurs = require("./vendeur.model.js")(mongoose);
+db.products = require("./product.model.js")(mongoose);
+db.commandes = require("./commande.model.js")(mongoose);
 
 
 module.exports = db;
