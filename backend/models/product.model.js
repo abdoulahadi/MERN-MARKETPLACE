@@ -10,7 +10,7 @@ module.exports = mongoose => {
       */
       vendeur: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Vendeur",
+        ref: "vendeur",
         required: true,
       },
       image:{
@@ -37,7 +37,7 @@ module.exports = mongoose => {
     { timestamps: true }
   );
 
-  schema.method("toJSON", function () {
+  productSchema.method("toJSON", function () {
     const { __v, _id, ...object } = this.toObject();
     object.id = _id;
     return object;
