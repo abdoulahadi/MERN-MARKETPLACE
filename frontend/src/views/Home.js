@@ -282,7 +282,7 @@ async handleaddToCart(idProduit){
                     <button
                       key={category.name}
                       className="btn-explore"
-                      onClick={() => this.getProductByCategory(category)}>
+                      onClick={() => this.getProductByCategory(category.name)}>
                       {category.name}
                     </button>
                   ))}
