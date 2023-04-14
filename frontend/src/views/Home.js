@@ -14,6 +14,8 @@ export class Home extends Component {
     this.getProductBySearch = this.getProductBySearch.bind(this);
     this.handleaddToCart = this.handleaddToCart.bind(this);
     this.qs = this.qs.bind(this);
+    this.hidePopup = this.hidePopup.bind(this)
+    this.preview = this.preview.bind(this)
 
     this.state = {
       latestProduct: [],
@@ -24,6 +26,7 @@ export class Home extends Component {
       selectCategories: [],
       loading: true,
       loadingSearch: false,
+      loadingLastest:true
     };
   }
   qs = $item => {
@@ -72,11 +75,15 @@ export class Home extends Component {
   }
   retrieveLastProducts() {
     const productDataService = createProductDataService();
+    this.setState({
+      loadingLastest:true
+    })
     productDataService
       .getNewProduct()
       .then(response => {
         this.setState({
           latestProduct: response.data,
+          loadingLastest:false
         });
       })
       .catch(e => {
@@ -132,10 +139,51 @@ async handleaddToCart(idProduit){
   //   this.getLatestProduct();
   //  this.getProductByCategory();
   // }
-
+  hidePopup = () => {
+    this.qs(".modal").style.display = "none";
+  };
+  preview = (name,image,description) => {
+    this.qs(".modal").style.display = "block";
+    this.qs("#path-description").innerHTML = description
+    this.qs("#path-name").innerHTML = name
+    this.qs("#img-preview").src ="http://localhost:8080/"+ image;
+    // e.target.parentElement.parentElement.parentElement.parentElement.parentElement.childNodes[0].getAttribute(
+    //   "src"
+    // );
+  };
   render() {
     return (
       <div>
+                <div className="modal">
+          <div className="modal-item pad-20 bg-white">
+            <button
+              id="btn-modal-hidden"
+              className="font bold"
+              onClick={this.hidePopup}>
+              {" "}
+              X{" "}
+            </button>
+            <div className="x-large col gap-20 pad-20">
+              <div className="col-ctr gap-20">
+              <span className="clr-black" id="path-name">
+                  {" "}
+                  {" "}
+                </span>
+                <span className="clr-gray" id="path-description">
+                  {" "}
+                  {" "}
+                </span>
+                <img
+                  src={""}
+                  alt="Home icon"
+                  width="260px"
+                  id="img-preview"
+                  height="180px"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
         <div className="x-row pad-20 gap-20">
           {/*  ******************************** RIGHT BOX ***************************************/}
           <div className="large-7 col">
@@ -287,7 +335,7 @@ async handleaddToCart(idProduit){
             <div className="large-3 col-md">
               {/********************************* ITEMS OF LEFT BOX ***************************************/}
 
-              {this.state.loading ? (
+              {this.state.loadingLastest ? (
                 <span className="sr-only">Loading...</span>
               ) : (
                 this.state.latestProduct.map(row => (
@@ -316,15 +364,16 @@ async handleaddToCart(idProduit){
                       <div className="row-sb x-large">
                         <span className="clr-bleue"> {"$ " + row.price} </span>
                         <div className="row">
-                          <a href="">
-                            {" "}
-                            <img
-                              src="./img/icons8-eye-24.png"
-                              alt="Home icon"
-                              width="24px"
-                              height="24px"
-                            />{" "}
-                          </a>
+                          
+                          <button  onClick={() => this.preview(row.name,row.image,row.description)}>
+                          {" "}
+                          <img
+                            src="./img/icons8-eye-24.png"
+                            alt="Home icon"
+                            width="24px"
+                            height="24px"
+                          />{" "}
+                        </button>
                           <button  onClick={() => this.handleaddToCart(row.id)}>
                           {" "}
                           <img

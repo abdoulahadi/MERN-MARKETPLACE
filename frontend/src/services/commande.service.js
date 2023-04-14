@@ -25,6 +25,9 @@ class CommandeDataService {
   getProductsCart(id){
     return this.http.get(`/commandes/${id}/afficher-produits`);
   }
+  getAllCommandesByUserId(id){
+    return this.http.get(`/commandes/${id}`);
+  }
 }
 
 export const createCommandeDataService = (contentType = "application/json") => {

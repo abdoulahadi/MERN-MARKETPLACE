@@ -18,6 +18,8 @@ module.exports = app => {
     // Afficher tous les produits d'une commande
     router.get('/:id/afficher-produits', commandes.afficherProduits);
 
+    router.get('/:userId', commandes.getAllCommandeByUserId);
+
     // Effectuer le paiement d'une commande
     router.post('/:id/paiement', commandes.effectuerPaiement);
 

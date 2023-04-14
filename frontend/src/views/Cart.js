@@ -4,6 +4,8 @@ import { createProductDataService } from "../services/product.service";
 import { useNavigate } from "react-router-dom";
 import { createCommandeDataService } from "../services/commande.service";
 import Loader from "./Loader";
+import Modal from 'react-modal';
+
 
 function Cart(props) {
   const [totalPrice, setTotalPrice] = useState(0);
@@ -12,7 +14,7 @@ function Cart(props) {
   const [cartUpdated, setCartUpdated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadings, setIsLoadings] = useState(true);
-
+  const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -70,6 +72,11 @@ function Cart(props) {
           setIsLoadings(false);
           const groupedProductArray = Object.values(groupedProducts);
           setProducts(groupedProductArray);
+          // Calculate total price
+          const total = groupedProductArray.reduce((accumulator, product) => {
+            return accumulator + product.price * product.count;
+          }, 0);
+          setTotalPrice(total);
           props.updateCartCount();
         })
         .catch(error => console.log(error));
@@ -83,20 +90,27 @@ function Cart(props) {
       count: updatedProducts[index].count + 1,
     };
     updatedProducts[index].isDisabled = false;
-    const commandeDataService = createCommandeDataService();
     setIsLoadings(true);
-    commandeDataService
-      .addCart(
-        JSON.stringify({
-          idProduit: idProduit,
-          idProprietaire: JSON.parse(sessionStorage.getItem("user")).id,
-        })
-      )
-      .then(data => {
-        setCartUpdated(true);
-        setIsLoadings(false);
-      });
-    // setProducts(updatedProducts);
+    if(!localStorage.getItem("cart")){
+      const commandeDataService = createCommandeDataService();
+      commandeDataService
+        .addCart(
+          JSON.stringify({
+            idProduit: idProduit,
+            idProprietaire: JSON.parse(sessionStorage.getItem("user")).id,
+          })
+        )
+        .then(data => {
+          setCartUpdated(true);
+          setIsLoadings(false);
+        });
+    }else{
+      let cartItems = JSON.parse(localStorage.getItem("cart"));
+      cartItems.push(idProduit);
+      localStorage.setItem("cart", JSON.stringify(cartItems));
+      setCartUpdated(true);
+      setIsLoadings(false);
+    }
   };
 
   const handleDecrementClick = (idProduit, index) => {
@@ -108,37 +122,55 @@ function Cart(props) {
       productsCopy[index].isDisabled = true;
       productsCopy[index].classNameName = "xx-font sml-btn-op clr-white";
       productsCopy[index].count -= 1;
-      const commandeDataService = createCommandeDataService();
-      setIsLoadings(true);
-      commandeDataService
-        .OnewithdrawCart(
-          JSON.stringify({
-            idProduit: idProduit,
-            idCommande: JSON.parse(localStorage.getItem("commande")).commande,
-          })
-        )
-        .then(data => {
+      if(!localStorage.getItem("cart")){
+        const commandeDataService = createCommandeDataService();
+        setIsLoadings(true);
+        commandeDataService
+          .OnewithdrawCart(
+            JSON.stringify({
+              idProduit: idProduit,
+              idCommande: JSON.parse(localStorage.getItem("commande")).commande,
+            })
+          )
+          .then(data => {
+            setCartUpdated(true);
+            setIsLoadings(false);
+          });
+      }else{
+        let cartItems = JSON.parse(localStorage.getItem("cart"));
+        const indexToRemove = cartItems.indexOf(idProduit);
+        if (indexToRemove !== -1) {
+          cartItems.splice(indexToRemove, 1);
+          localStorage.setItem("cart", JSON.stringify(cartItems));
           setCartUpdated(true);
-          setIsLoadings(false);
-        });
+      }
+    }
     } else {
       productsCopy[index].count -= 1;
-      const commandeDataService = createCommandeDataService();
-      setIsLoadings(true);
-      commandeDataService
-        .OnewithdrawCart(
-          JSON.stringify({
-            idProduit: idProduit,
-            idCommande: JSON.parse(localStorage.getItem("commande")).commande,
-          })
-        )
-        .then(data => {
+      if(!localStorage.getItem("cart")){
+        const commandeDataService = createCommandeDataService();
+        setIsLoadings(true);
+        commandeDataService
+          .OnewithdrawCart(
+            JSON.stringify({
+              idProduit: idProduit,
+              idCommande: JSON.parse(localStorage.getItem("commande")).commande,
+            })
+          )
+          .then(data => {
+            setCartUpdated(true);
+            setIsLoadings(false);
+          });
+      }else{
+        let cartItems = JSON.parse(localStorage.getItem("cart"));
+        const indexToRemove = cartItems.indexOf(idProduit);
+        if (indexToRemove !== -1) {
+          cartItems.splice(indexToRemove, 1);
+          localStorage.setItem("cart", JSON.stringify(cartItems));
           setCartUpdated(true);
-          setIsLoadings(false);
-          // setProducts(productsCopy);
-        });
+      }
     }
-    // setProducts(productsCopy);
+    }
   };
 
   const handleDeleteProduct = (index, idProduit) => {
@@ -179,21 +211,56 @@ function Cart(props) {
       commandeDataService
         .payment(JSON.parse(localStorage.getItem("commande")).commande)
         .then(data => {
-          console.log(data);
           setIsLoadings(false);
           localStorage.removeItem("commande");
           setCartUpdated(true);
-          window.location.reload(); // Ajouter une instruction pour recharger la page
-          alert("Le paiement a été effectué");
+          handleShowModal();
         });
     } else {
       localStorage.setItem("page_view", "/cart");
       navigate("/login");
     }
   };
-
+  
+  const handleCloseModal = () => {
+    console.log("ok")
+    navigate("/")
+    setShowModal(false)
+  };
+  
+  const handleShowModal = () => {
+    setShowModal(true);
+    setIsLoading(true);
+    setCartUpdated(true);
+  };
   return (
     <div className="row-sml pad-20 gap-20">
+          <Modal
+  isOpen={showModal}
+  onRequestClose={()=>handleCloseModal()}
+  style={{
+    overlay: {
+      backgroundColor: 'rgba(0, 0, 0, 0.5)'
+    },
+    content: {
+      top: '50%',
+      left: '50%',
+      right: 'auto',
+      bottom: 'auto',
+      marginRight: '-50%',
+      transform: 'translate(-50%, -50%)',
+      borderRadius: '10px',
+      padding: '50px'
+    }
+  }}
+>
+  <div style={{ textAlign: 'center' }}>
+    <h2 style={{ marginBottom: '20px' }}>La commande a été enregistrée.</h2>
+    <p style={{ fontSize: '20px' }}>Merci pour votre achat.</p>
+    <button style={{ marginTop: '30px', backgroundColor: '#6c757d', border: 'none', color: 'white', padding: '10px 20px', borderRadius: '5px', cursor: 'pointer' }} onClick={() =>{ props.updateCartCount();navigate("/")}}>Fermer</button>
+  </div>
+</Modal>
+
       {/*  ******************************** RIGHT BOX ***************************************/}
       {isLoadings && <Loader />}
       <div className="col bg-white pad-20 border x-large gap-20">

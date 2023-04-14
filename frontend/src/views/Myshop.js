@@ -33,10 +33,14 @@ export class Myshop extends Component {
     formData.append("user", this.state.idUser);
     const vendeurDataServiceMultipart = createVendeurDataService("multipart/form-data");
     vendeurDataServiceMultipart.create(formData)
-      .then(data => console.log(data))
+      .then(data => {
+        console.log(data);
+        this.qs("#shop-modal").style.display = "none";
+        this.componentDidMount()
+      })
       .catch(error => console.error(error));
 
-    this.qs("#shop-modal").style.display = "block";
+    
     // console.log(this.state.user);
   };
 
@@ -141,13 +145,13 @@ export class Myshop extends Component {
         <div className="large border-btm row">
           <span className="clr-gray"> My shops </span>
         </div>
-        {this.state.length === 0 ? (
+        {this.state.myshop.length === 0 ? (
           <div className="large pad-20 bg-pink row-ctr">
             <span className="clr-white"> there is no shop currently </span>
           </div>
         ) : (
-          this.state.myshop.map(row => (
-            <div className="large shadow pad-10 bg-white row-sb-sml">
+          this.state.myshop.map((row,index) => (
+            <div className="large shadow pad-10 bg-white row-sb-sml" key={index}>
               <div className="x-large row-y-ctr">
                 <img
                   src="../img/icons8-shopping-mall-100.png"

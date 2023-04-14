@@ -2,6 +2,9 @@ import React, { Component } from "react";
 import { createProductDataService } from "../services/product.service";
 import { createCategoryDataService } from "../services/category.service";
 
+import Loader from "./Loader";
+import { createVendeurDataService } from "../services/vendeur.service";
+
 export class Panel extends Component {
   constructor(props) {
     super(props);
@@ -14,11 +17,14 @@ export class Panel extends Component {
     this.submitAddProduct = this.submitAddProduct.bind(this);
     this.handleDeleteProduct = this.handleDeleteProduct.bind(this);
     this.retrieveCategories = this.retrieveCategories.bind(this);
+    this.deleteShop = this.deleteShop.bind(this)
 
     this.state = {
       data: [],
       idVendeur: window.location.href.split("/")[4],
-      categories:[]
+      categories:[],
+      isdelete : false,
+      isloading :true
     };
   }
   qs = $item => {
@@ -40,12 +46,21 @@ export class Panel extends Component {
       .findByVendeur(this.state.idVendeur)
       .then(res => {
         this.setState({ data: res.data });
-        console.log(this.state.myshop);
       })
-      .catch(err => err);
+      .catch(err => {
+        
+        console.error(err);
+        this.setState({
+          isdelete:true,
+          data: []
+      })
+      });
   }
 
   componentDidMount() {
+    this.setState({
+      isloading:true
+    })
     this.getShopByUser();
     this.retrieveCategories();
   }
@@ -56,10 +71,14 @@ export class Panel extends Component {
       .then(response => {
         this.setState({
           categories: response.data,
+          isloading:false
         });
       })
       .catch(e => {
-        console.log(e);
+        console.error(e);
+        this.setState({
+          isloading:false
+        })
       });
   }
   submitAddProduct(event) {
@@ -70,6 +89,9 @@ export class Panel extends Component {
     // const idVendeur = window.location.href.split("/")[4];
     formData.append("vendeur", this.state.idVendeur);
     const productDataService = createProductDataService("multipart/form-data");
+    this.setState({
+      isloading:true
+    })
     productDataService
       .create(formData)
       .then(data => {
@@ -77,14 +99,25 @@ export class Panel extends Component {
         console.log(data);
         this.qs(".modal")[0].style.display = "none";
         form.reset();
+        this.setState({
+          isloading:false
+        })
       })
-      .catch(error => console.error(error));
+      .catch(error => {
+        console.error(error);
+        this.setState({
+          isloading:false
+        })
+      });
 
     // console.log(this.state.user);
   }
 
   handleDeleteProduct(productId) {
     const productDataService = createProductDataService();
+    this.setState({
+      isloading:true
+    })
     productDataService
       .delete(productId)
       .then(() => {
@@ -93,12 +126,30 @@ export class Panel extends Component {
           data: prevState.data.filter(product => product.id !== productId),
         }));
         this.getShopByUser();
+        this.setState({
+          isloading:false
+        })
       })
       .catch(error => {
         console.error(error);
       });
   }
-
+deleteShop(){
+  const vendeurDataService = createVendeurDataService();
+  this.setState({
+    isloading:true
+  })
+  vendeurDataService.delete(window.location.href.split("/")[4])
+  .then((res)=>{
+    this.setState({
+      isdelete:true,
+      isloading:false
+    })
+    this.hidePopup();
+    this.getShopByUser();
+    this.retrieveCategories();
+  })
+}
   addProduct = () => {
     this.qsa(".modal")[0].style.display = "block";
   };
@@ -122,6 +173,7 @@ export class Panel extends Component {
   render() {
     return (
       <div className="">
+        {this.state.isloading && <Loader />}
         {/* ******************************* Modal ********************************* */}
         <div className="modal">
           <div className="modal-item pad-20 bg-white col-ctr">
@@ -220,7 +272,7 @@ export class Panel extends Component {
                   <input
                     type="submit"
                     id="btn-submit-add-product"
-                    onClick={this.hidePopup}
+                    onClick={this.deleteShop}
                     className="link-submit bold clr-white marge-top-10"
                     value="YES"
                   />
@@ -231,7 +283,7 @@ export class Panel extends Component {
         </div>
 
         {/* ******************************* PALETTE ********************************* */}
-
+        {!this.state.isdelete &&
         <div className="palette col bg-white border">
           <button id="add-product-btn" onClick={this.addProduct}>
             {" "}
@@ -274,14 +326,18 @@ export class Panel extends Component {
             />{" "}
           </a>
         </div>
-
+         }
         <div className="bg-gray pad-20 large">
-          <span className="x-font clr-bleue marge row">
+{!this.state.isdelete && <span className="x-font clr-bleue marge row">
             {" "}
             All my shop's product{" "}
-          </span>
+          </span>}
+          
+        {this.state.isdelete && <a href="/my-shop" className="link-submit clr-white pad-20 large">
+            {" "}Créer un boutique {" "}
+          </a>}
         </div>
-
+         
         {/*  ******************************** ARTICLES ***************************************/}
         <div className="row-md pad-20 large">
           {this.state.data.map(row => (

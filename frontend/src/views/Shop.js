@@ -1,15 +1,20 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { Component } from "react";
 import { createProductDataService } from "../services/product.service";
+import { createVendeurDataService } from "../services/vendeur.service";
 // import { useParams } from "react-router-dom";
 
 export class Shop extends Component {
   constructor(props) {
     super(props);
+    this.getShopByUser = this.getShopByUser.bind(this);
+    this.getVendeurById = this.getVendeurById.bind(this);
 
     this.state = {
       data: [],
       idVendeur: window.location.href.split("/")[4],
+      nameBoutique:"",
+      descriptionBoutique:""
     };
   }
   getShopByUser() {
@@ -21,9 +26,24 @@ export class Shop extends Component {
       })
       .catch(err => err);
   }
+  getVendeurById(){
+    const vendeurDataService = createVendeurDataService();
+    vendeurDataService.get(this.state.idVendeur)
+    .then((res)=>{
+      this.setState({
+          nameBoutique : res.data.name,
+          descriptionBoutique:res.data.description
+      })
+    })
+    .catch((error)=>{
+      console.log(error);
+    })
+
+  }
 
   componentDidMount() {
     this.getShopByUser();
+    this.getVendeurById();
   }
   qs = $item => {
     return document.querySelector($item);
@@ -83,35 +103,28 @@ export class Shop extends Component {
           </div>
         </div>
         <div className="bg-gray pad-20 large">
-          <span className="x-font clr-bleue marge row"> shop's name </span>
+           <h1 className="x-font clr-bleue marge row"> {this.state.nameBoutique} </h1>
+           <span>{this.state.descriptionBoutique}</span>
         </div>
         {/*  ******************************** ARTICLES ***************************************/}
-        <div className="row-md pad-20 large">
-          {this.state.data.map(row => (
-            <div className="" key={row.id}>
+        <div className="product-list">
+          { this.state.data.length > 0 ?
+          this.state.data.map(row => (
+            <div className="product" key={row.id}>
               <img
                 src={"http://localhost:8080/" + row.image}
-                alt="Home icon"
+                alt={row.name}
                 width="240px"
                 height="160px"
               />
-              <div className="hashtag row-sb-md">
-                <div className="col">
-                  <span className="clr-white"> {row.name} </span>
-                  <span className="sml-font clr-white">
-                    {" "}
-                    {"$ " + row.price}{" "}
-                  </span>
-                </div>
-                <div className="row">
-                <div className="row">
-                    <button onClick={() =>this.preview(row.name, row.image,row.description)} > <img src="../img/icons8-eye-24.png" title="preview" alt="Home icon" width="24px" height="24px"/> </button>
-                    <button onClick={()=>this.props.addTocart(row.id)} > <img src="../img/icons8-shopping-cart-24.png" title="preview" alt="Home icon" width="24px" height="24px"/> </button>
-                </div>
-                </div>
-              </div>
+               <h3>{row.name}</h3>
+               <p className="price">{row.price} $</p>
+               <p className="description">{row.description}</p>
+               <button className="btn" onClick={() => this.props.addTocart(row.id)}>Add to Cart</button>
             </div>
-          ))}
+          ))
+        :<span>Ce Boutique est vide</span>
+        }
         </div>
       </div>
     );
