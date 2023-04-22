@@ -8,6 +8,9 @@ const path = require('path');
 
 const app = express();
 const categories = require("./config/categories.config.json");
+const http = require('http');
+const server = http.createServer(app);
+const socketConfig = require('./config/socket.config');
 
 
 var corsOptions = {
@@ -51,12 +54,21 @@ require("./routes/product.route")(app);
 require("./routes/vendeur.route")(app);
 require("./routes/user.route")(app);
 require("./routes/commande.route")(app);
+require("./routes/auction.route")(app);
 const uploadsPath = path.join(__dirname, 'uploads');
 
 app.use('/uploads', express.static(uploadsPath));
 
+app.use('/socket.io', (req, res, next) => {
+  console.log(`Received request on ${req.path}`);
+  next();
+});
+
 const PORT = process.env.PORT || 8080;
 
-app.listen(PORT, () => {
+
+// Configure and initialize socket.io
+socketConfig.init(server);
+server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
 });

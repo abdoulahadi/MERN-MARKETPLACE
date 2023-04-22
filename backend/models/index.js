@@ -16,6 +16,8 @@ db.users = require("./user.model.js")(mongoose);
 db.vendeurs = require("./vendeur.model.js")(mongoose);
 db.products = require("./product.model.js")(mongoose);
 db.commandes = require("./commande.model.js")(mongoose);
+db.bids = require("./bid.model.js")(mongoose);
+db.auctions = require("./auction.model.js")(mongoose);
 
 
 module.exports = db;

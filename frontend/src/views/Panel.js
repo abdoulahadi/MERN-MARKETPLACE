@@ -18,7 +18,9 @@ export class Panel extends Component {
     this.handleDeleteProduct = this.handleDeleteProduct.bind(this);
     this.retrieveCategories = this.retrieveCategories.bind(this);
     this.deleteShop = this.deleteShop.bind(this)
-
+    this.modal2Show = this.modal2Show.bind(this)
+    this.modal2Hide = this.modal2Hide.bind(this)
+    
     this.state = {
       data: [],
       idVendeur: window.location.href.split("/")[4],
@@ -169,6 +171,12 @@ deleteShop(){
   getPathProfile = () => {
     this.qs("#path-img").innerText = this.qs("#photo-modal").value;
   };
+  modal2Show(){
+    this.qs(".modal2").style.display = "block";
+  }
+  modal2Hide(){
+    this.qs(".modal2").style.display = "none";
+  }
 
   render() {
     return (
@@ -281,7 +289,63 @@ deleteShop(){
             </div>
           </div>
         </div>
-
+        <div className="modal modal2" style={{display:'none'}}>
+          <div className="modal-item pad-20 bg-white col-ctr">
+            <button
+              id="btn-modal-hidden"
+              className="font bold"
+              onClick={this.modal2Hide}>
+              {" "}
+              X{" "}
+            </button>
+            <fieldset className="border">
+              <legend className="font clr-gray"> Add Bidding </legend>
+              <div className="x-large col gap-20">
+                <form onSubmit={this.submitAddProduct}>
+                  <div className="col">
+                    <div className="inputs marge-top-10">
+                      <input
+                        type="text"
+                        name="amount"
+                        id="amount"
+                        className="input"
+                        placeholder="amount"
+                        required
+                      />
+                    </div>
+                    <div className="inputs marge-top-10">
+                      <input
+                        type="date"
+                        name="dateFinEnchere"
+                        id="dateFinEnchere"
+                        className="input"
+                        placeholder="dateFinEnchere"
+                        required
+                      />
+                    </div>
+                    <div className="inputs marge-top-10">
+                      <input
+                        type="time"
+                        name="timeFinEnchere"
+                        id="timeFinEnchere"
+                        className="input"
+                        placeholder="timeFinEnchere"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <input
+                    type="submit"
+                    id="btn-submit-add-product"
+                    onClick={this.modal2Hide}
+                    className="link-submit font bold clr-white marge-top-10"
+                    value="Save"
+                  />
+                </form>
+              </div>
+            </fieldset>
+          </div>
+        </div>
         {/* ******************************* PALETTE ********************************* */}
         {!this.state.isdelete &&
         <div className="palette col bg-white border">
@@ -374,6 +438,15 @@ deleteShop(){
                     width="24px"
                     height="24px"
                     onClick={() => this.handleDeleteProduct(row.id)}
+                    style={{ cursor: "pointer" }}
+                  />{" "}
+                  <img
+                    src="../img/icons8-vente-aux-enchères-30.png"
+                    title="bidding"
+                    alt="Home icon"
+                    width="24px"
+                    height="24px"
+                    onClick={() => this.modal2Show()}
                     style={{ cursor: "pointer" }}
                   />{" "}
                 </div>

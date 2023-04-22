@@ -711,3 +711,38 @@ label{
     cursor:default;
   }
   
+
+  /**----------------------------++++++++++++++++++++++++++++ */
+
+  .notification-container {
+    position: fixed;
+    top: 60px; /* hauteur du header */
+    width: 100%;
+    z-index: 9999;
+  }
+  
+  .notification {
+    position: relative;
+    margin: 0 auto;
+    max-width: 500px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    box-shadow: 0px 0px 5px #999;
+  }
+  
+  .notification-text {
+    margin: 0;
+  }
+  
+  .close-notification {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    border: none;
+    background-color: transparent;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+ 

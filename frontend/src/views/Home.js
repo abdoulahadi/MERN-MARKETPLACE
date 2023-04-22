@@ -4,6 +4,29 @@ import { createProductDataService } from "../services/product.service";
 import { createCategoryDataService } from "../services/category.service";
 // import { createCommandeDataService } from "../services/commande.service";
 import moment from "moment";
+
+import io from 'socket.io-client';
+// Cette fonction affiche une notification en bas de la page
+
+function showNotification(message) {
+  const notification = document.querySelector('.notification-text');
+  const notificationContainer = document.querySelector('.notification-container');
+  notification.innerHTML = message;
+  notificationContainer.style.display = 'block';
+
+  setTimeout(() => {
+    notificationContainer.style.display = 'none';
+  }, 5000); // 5000 millisecondes = 5 secondes
+}
+const socket = io('http://localhost:8080');
+
+// Écouter l'événement newBid pour afficher une nouvelle enchère
+socket.on('newAuction', (data) => {
+  console.log('New bid:', data);
+  showNotification(`${data.message}`);
+});
+
+
 export class Home extends Component {
   constructor(props) {
     super(props);
@@ -154,6 +177,12 @@ async handleaddToCart(idProduit){
   render() {
     return (
       <div>
+            <div className="notification-container" style={{display:'none'}}>
+      <div className="notification">
+        <p className="notification-text"></p>
+        <button className="close-notification">x</button>
+      </div>
+    </div>
                 <div className="modal">
           <div className="modal-item pad-20 bg-white">
             <button
@@ -282,7 +311,7 @@ async handleaddToCart(idProduit){
                     <button
                       key={category.name}
                       className="btn-explore"
-                      onClick={() => this.getProductByCategory(category)}>
+                      onClick={() => this.getProductByCategory(category.name)}>
                       {category.name}
                     </button>
                   ))}
