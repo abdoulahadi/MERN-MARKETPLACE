@@ -283,7 +283,7 @@ function Cart(props) {
                   <div className="col-p-rgt large-3">
                     <span className="x-font bold clr-gray text">
                       {" "}
-                      {row.price} FCFA{" "}
+                      {row.price} $ {" "}
                     </span>
                   </div>
                 </div>
@@ -338,7 +338,7 @@ function Cart(props) {
               <span className="smal-font clr-gray"> Sous-total </span>
               <span className="font clr-gray bold">
                 {" "}
-                {parseFloat(totalPrice).toFixed(2)} FCFA{" "}
+                {parseFloat(totalPrice).toFixed(2)} ${" "}
               </span>
             </div>
             <div className="col">
@@ -352,7 +352,7 @@ function Cart(props) {
               className="pad-20 btn-buy clr-white bold"
               onClick={handleronSubmit}>
               {" "}
-              COMMANDER ( {parseFloat(totalPrice).toFixed(2)} FCFA ){" "}
+              COMMANDER ( {parseFloat(totalPrice).toFixed(2)} $ ){" "}
             </button>
           </div>
         </div>
