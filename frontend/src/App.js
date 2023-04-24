@@ -14,6 +14,7 @@ import React , {Component} from "react";
 import { BrowserRouter , Routes , Route} from 'react-router-dom';
 import { createCommandeDataService } from "./services/commande.service";
 import  Cart  from './views/Cart';
+import { Auction } from './views/Trade';
 
 
 class App extends Component {
@@ -126,6 +127,7 @@ render(){
         <Route path="/shop/:id" element={ <Shop addTocart = {this.addTocart} /> } ></Route>
         <Route path="/sign-up" element={ <Signup /> } ></Route>
         <Route path="/cart" element={ <Cart updateCartCount={this.updateCartCount}/> } ></Route>
+        <Route path="/auction" element={ <Auction></Auction>} ></Route>
         <Route path="*" element={ <Error />  } ></Route>
       </Routes>
       <Footer />

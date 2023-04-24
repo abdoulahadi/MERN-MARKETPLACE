@@ -22,8 +22,7 @@ const socket = io('http://localhost:8080');
 
 // Écouter l'événement newBid pour afficher une nouvelle enchère
 socket.on('newAuction', (data) => {
-  console.log('New bid:', data);
-  showNotification(`${data.message}`);
+  showNotification(`${data.message} <a href='/auction'>go to auction</a>`);
 });
 
 
@@ -177,12 +176,15 @@ async handleaddToCart(idProduit){
   render() {
     return (
       <div>
-            <div className="notification-container" style={{display:'none'}}>
-      <div className="notification">
-        <p className="notification-text"></p>
-        <button className="close-notification">x</button>
+        {sessionStorage.getItem("user") &&
+        <div className="notification-container" style={{display:'none'}}>
+        <div className="notification">
+          <p className="notification-text"></p>
+          <button className="close-notification">x</button>
+        </div>
       </div>
-    </div>
+        }
+            
                 <div className="modal">
           <div className="modal-item pad-20 bg-white">
             <button

@@ -582,6 +582,25 @@ label{
     background-color: #77EC36;
     box-shadow: 0 0 4px gray;
 }
+.etiquette{
+    position: relative;
+    top: -240px;
+    right: -145px;
+    background-color: var(--color-1);
+    width: 80px;
+    height: 35px;
+    text-align: center;
+    color: var(--color-3);
+}
+.up{
+    position: relative;
+    top: -30px;
+}
+.container-trade {
+    width: 80%;
+    margin: 0 auto; /* laisser les marges gauche et droite égales */
+  }
+  
 
 /* -----------------------------------------------* */
 .cart-icon-container {

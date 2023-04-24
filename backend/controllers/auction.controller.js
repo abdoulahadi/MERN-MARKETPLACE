@@ -1,5 +1,10 @@
 const socket = require("../config/socket.config");
 const db = require("../models");
+const nodemailer = require('nodemailer');
+
+
+const cron = require('node-cron');
+const axios = require('axios');
 
 const Auction = db.auctions;
 const Bid = db.bids;
@@ -7,14 +12,20 @@ const Bid = db.bids;
 // Contrôleur pour créer une vente aux enchères
 exports.createAuction = async (req, res) => {
   try {
-    const { product, startingPrice, auctionEndTime } = req.body;
+    const { product, startingPrice, date,time } = req.body;
     const vendeur = req.params.idVendeur;
+    // Récupérer les valeurs des champs date et time
+    const auctionDate = new Date(date);
+    const auctionTime = time.split(':');
+
+    // Régler l'heure et la minute
+    auctionDate.setHours(auctionTime[0], auctionTime[1]);
 
     const auction = new Auction({
       product,
       vendeur,
       startingPrice,
-      auctionEndTime,
+      auctionEndTime:auctionDate
     });
 
     await auction.save();
@@ -72,8 +83,9 @@ exports.placeBid = async (req, res) => {
     await bid.save();
     auction.bids.push(bid);
     await auction.save();
+    const activeAuctions = await Auction.find({ status: "active" })
     const io = socket.getIO();
-    io.emit("newPlaceBid", { message: "Une nouvelle enchère est optimisé!!" });
+    io.emit("newPlaceBid", { message: "Une nouvelle enchère est mise à jour!!",activeAuctions});
     res.status(201).json(auction);
   } catch (error) {
     console.error(error);
@@ -89,7 +101,7 @@ exports.cancelAuction = async (req, res) => {
     const  auctionId  = req.params.auctionId;
     const vendeur = req.params.vendeurId; // L'ID de l'utilisateur connecté est stocké dans req.user
 
-    const auction = await Auction.findOne({ _id: auctionId, vendeur });
+    const auction = await Auction.findOne({ id: auctionId, vendeur });
     if (!auction)
       return res.status(404).json({
         message:
@@ -117,9 +129,21 @@ exports.cancelAuction = async (req, res) => {
 // Contrôleur pour récupérer les ventes aux enchères actives
 exports.getActiveAuctions = async (req, res) => {
   try {
-    const auctions = await Auction.find({ status: "active" }).populate(
-      "vendeur"
-    ); // La méthode populate permet de récupérer les données de l'utilisateur vendeur associé à chaque vente aux enchères
+    const auctions = await Auction.find({ status: "active" })
+    .populate({
+      path: "product"
+    })
+    .populate({
+      path: "vendeur"
+    })
+    .populate({
+      path: "bids",
+      populate:{
+        path: "user",
+        model:"user",
+      }
+    })
+     // La méthode populate permet de récupérer les données de l'utilisateur vendeur associé à chaque vente aux enchères
     res.status(200).json(auctions);
   } catch (error) {
     console.error(error);
@@ -166,3 +190,114 @@ exports.getAuctionDetails = async (req, res) => {
     });
   }
 };
+
+
+exports.updateAuctionsStatus = async () => {
+  // Trouver toutes les enchères qui ont dépassé la date de fin
+  const auctionsToUpdate = await Auction.find({
+    status: 'active',
+    auctionEndTime: { $lt: new Date() }
+  }).populate({
+    path: "bids",
+    populate: {
+      path: "user",
+      model: "user"
+    },
+  }).populate({
+    path: "vendeur",
+    populate: {
+      path: "user",
+      model: "user"
+    },
+  });
+  console.log(auctionsToUpdate)
+  // Pour chaque enchère expirée, trouver le plus grand bid et son utilisateur associé
+  for (const auction of auctionsToUpdate) {
+    auction.status = 'expired';
+    await auction.save();
+    const highestBid = auction.bids[auction.bids.length - 1] || null;
+    if (highestBid) {
+      // Envoyer un email à l'utilisateur ayant placé le plus grand bid
+      const transporter = nodemailer.createTransport({
+        host: "smtp.office365.com",
+        port:587,
+        secure: false,
+        tls:{
+            ciphers:"SSLv3"
+        },
+        auth: {
+          user: "mernmarketplace@outlook.com",
+          pass: "ceciestunmotdepassedeteste@2023",
+        },
+      });
+      const mailOptions = {
+        from: 'mernmarketplace@outlook.com',
+        to: highestBid.user.mail,
+        subject: 'Votre enchère a été remportée',
+        html:`<!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Vous avez remporté l'enchère</title>
+            <style>
+              body {
+                font-family: Arial, sans-serif;
+                background-color: #F5F5F5;
+                padding: 20px;
+              }
+              h1 {
+                color: #1E90FF;
+                font-size: 24px;
+              }
+              p {
+                font-size: 18px;
+              }
+              .highlight {
+                color: #FF8C00;
+                font-weight: bold;
+              }
+            </style>
+          </head>
+          <body>
+            <h1>Félicitations!</h1>
+            <p>Vous avez remporté l'enchère pour <span class="highlight">${auction.id}</span> avec une offre de <span class="highlight">${highestBid.amount} $</span>.</p>
+            <p>Nous espérons que vous apprécierez votre achat et n'hésitez pas à nous contacter si vous avez des questions.</p>
+            <p>Le vendeur ${auction.vendeur.name} vous contactera dans les plus brefs délais.</p>
+            <p>Cordialement,<br>L'équipe de notre site</p>
+          </body>
+        </html>
+        `
+      };
+      await transporter.sendMail(mailOptions);
+
+      // Envoyer un e-mail au vendeur
+    const sellerMail = {
+      from: 'mernmarketplace@outlook.com',
+      to: auction.vendeur.user.mail,
+      subject: `Votre enchère ${auction.title} a été remportée !`,
+      html: `
+        <p>Bonjour ${auction.vendeur.user.username},</p>
+        <p>Votre enchère ${auction.id} a été remportée avec une offre de ${highestBid.amount} $.</p>
+        <p>Veuillez contacter l'acheteur ${highestBid.user.mail} pour finaliser la vente.</p>
+        <p>Merci d'avoir utilisé notre site.</p>
+      `
+    };
+    await transporter.sendMail(sellerMail);
+    }
+  }
+};
+
+
+
+cron.schedule('* * * * *', async () => {
+  try {
+    const auctions = await Auction.find({ status: 'active' });
+    for (const auction of auctions) {
+      await axios.post(`http://localhost:8080/auctions/${auction.id}/update-status`);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+

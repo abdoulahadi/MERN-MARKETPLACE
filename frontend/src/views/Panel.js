@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { createProductDataService } from "../services/product.service";
+import { createAuctionDataService } from "../services/auction.service";
 import { createCategoryDataService } from "../services/category.service";
 
 import Loader from "./Loader";
@@ -20,6 +21,7 @@ export class Panel extends Component {
     this.deleteShop = this.deleteShop.bind(this)
     this.modal2Show = this.modal2Show.bind(this)
     this.modal2Hide = this.modal2Hide.bind(this)
+    this.submitAddAuction = this.submitAddAuction.bind(this)
     
     this.state = {
       data: [],
@@ -88,7 +90,7 @@ export class Panel extends Component {
 
     const form = event.target;
     const formData = new FormData(form);
-    // const idVendeur = window.location.href.split("/")[4];
+    // const idVendeur = window.location.href.split("/")[4];submitAddAuction
     formData.append("vendeur", this.state.idVendeur);
     const productDataService = createProductDataService("multipart/form-data");
     this.setState({
@@ -115,6 +117,34 @@ export class Panel extends Component {
     // console.log(this.state.user);
   }
 
+  submitAddAuction(event) {
+    event.preventDefault();
+
+    const form = event.target;
+    const formData = new FormData(form);
+
+    const auctionDataService = createAuctionDataService();
+    this.setState({
+      isloading:true
+    })
+    auctionDataService
+      .create(this.state.idVendeur,formData)
+      .then(data => {
+        this.modal2Hide()
+        form.reset();
+        this.setState({
+          isloading:false
+        })
+      })
+      .catch(error => {
+        console.error(error);
+        this.setState({
+          isloading:false
+        })
+      });
+
+    // console.log(this.state.user);
+  }
   handleDeleteProduct(productId) {
     const productDataService = createProductDataService();
     this.setState({
@@ -301,35 +331,43 @@ deleteShop(){
             <fieldset className="border">
               <legend className="font clr-gray"> Add Bidding </legend>
               <div className="x-large col gap-20">
-                <form onSubmit={this.submitAddProduct}>
+                <form onSubmit={this.submitAddAuction}>
                   <div className="col">
+                  <div className="inputs marge-top-10">
+                  <select className="select" id="search_category" name="product" required>
+                    <option value="">-- Sélectionner un produit --</option>
+                    {this.state.data.map(product => (
+                      <option key={product.id} value={product.id}>{product.name}</option>
+                    ))}
+                  </select>
+                  </div>
                     <div className="inputs marge-top-10">
                       <input
                         type="text"
-                        name="amount"
-                        id="amount"
+                        name="startingPrice"
+                        id="startingPrice"
                         className="input"
-                        placeholder="amount"
+                        placeholder="Starting price"
                         required
                       />
                     </div>
                     <div className="inputs marge-top-10">
                       <input
                         type="date"
-                        name="dateFinEnchere"
-                        id="dateFinEnchere"
+                        name="date"
+                        id="date"
                         className="input"
-                        placeholder="dateFinEnchere"
+                        placeholder="date"
                         required
                       />
                     </div>
                     <div className="inputs marge-top-10">
                       <input
                         type="time"
-                        name="timeFinEnchere"
-                        id="timeFinEnchere"
+                        name="time"
+                        id="time"
                         className="input"
-                        placeholder="timeFinEnchere"
+                        placeholder="time"
                         required
                       />
                     </div>
@@ -359,16 +397,17 @@ deleteShop(){
               height="24px"
             />{" "}
           </button>
-          <a href="/">
+          <button>
             {" "}
             <img
               src="../img/icons8-settings-50.png"
               alt="Home icon"
-              title="accounting"
+              title="add Bidding options"
               width="24px"
               height="24px"
+              onClick={() => this.modal2Show()}
             />{" "}
-          </a>
+          </button>
           <button id="add-product-btn" onClick={this.delshop}>
             {" "}
             <img
@@ -405,7 +444,7 @@ deleteShop(){
         {/*  ******************************** ARTICLES ***************************************/}
         <div className="row-md pad-20 large">
           {this.state.data.map(row => (
-            <div className="">
+            <div className="" key={row.id}>
               <img
                 src={"http://localhost:8080/" + row.image}
                 alt="Home icon"
@@ -440,7 +479,7 @@ deleteShop(){
                     onClick={() => this.handleDeleteProduct(row.id)}
                     style={{ cursor: "pointer" }}
                   />{" "}
-                  <img
+                  {/* <img
                     src="../img/icons8-vente-aux-enchères-30.png"
                     title="bidding"
                     alt="Home icon"
@@ -448,7 +487,7 @@ deleteShop(){
                     height="24px"
                     onClick={() => this.modal2Show()}
                     style={{ cursor: "pointer" }}
-                  />{" "}
+                  />{" "} */}
                 </div>
               </div>
             </div>

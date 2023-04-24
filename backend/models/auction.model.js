@@ -3,7 +3,7 @@ module.exports = mongoose => {
     product: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "product",
-      required: true,
+      required: true
     },
     vendeur: {
       type: mongoose.Schema.Types.ObjectId,
